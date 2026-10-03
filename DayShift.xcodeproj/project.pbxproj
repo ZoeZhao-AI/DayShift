@@ -14,6 +14,8 @@
 		9B6E4D9B3071003E00A4BBD4 /* UserNotificationsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6E4D9A3071003E00A4BBD4 /* UserNotificationsUI.framework */; };
 		9B6E4DA53071003E00A4BBD4 /* DayShiftNotificationContent.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9B6E4D973071003E00A4BBD4 /* DayShiftNotificationContent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9B6E4DD6307102C100A4BBD4 /* DayShiftKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B6E4DD5307102C100A4BBD4 /* DayShiftKit */; };
+		9B6E4DD83071046100A4BBD4 /* DayShiftKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B6E4DD73071046100A4BBD4 /* DayShiftKit */; };
+		9B6E4DEF3071054300A4BBD4 /* DayShiftKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B6E4DEE3071054300A4BBD4 /* DayShiftKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -104,6 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B6E4DEF3071054300A4BBD4 /* DayShiftKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,6 +116,7 @@
 			files = (
 				9B6E4D743070FF8200A4BBD4 /* SwiftUI.framework in Frameworks */,
 				9B6E4D723070FF8200A4BBD4 /* WidgetKit.framework in Frameworks */,
+				9B6E4DD83071046100A4BBD4 /* DayShiftKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,6 +188,7 @@
 			);
 			name = DayShift;
 			packageProductDependencies = (
+				9B6E4DEE3071054300A4BBD4 /* DayShiftKit */,
 			);
 			productName = DayShift;
 			productReference = 9B6E4D433070FA5400A4BBD4 /* DayShift.app */;
@@ -206,6 +211,7 @@
 			);
 			name = DayShiftWidgetExtension;
 			packageProductDependencies = (
+				9B6E4DD73071046100A4BBD4 /* DayShiftKit */,
 			);
 			productName = DayShiftWidgetExtension;
 			productReference = 9B6E4D6F3070FF8200A4BBD4 /* DayShiftWidgetExtension.appex */;
@@ -697,6 +703,16 @@
 /* Begin XCSwiftPackageProductDependency section */
 		9B6E4DD5307102C100A4BBD4 /* DayShiftKit */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = DayShiftKit;
+		};
+		9B6E4DD73071046100A4BBD4 /* DayShiftKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B6E4DD4307102C100A4BBD4 /* XCLocalSwiftPackageReference "Packages/DayShiftKit" */;
+			productName = DayShiftKit;
+		};
+		9B6E4DEE3071054300A4BBD4 /* DayShiftKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B6E4DD4307102C100A4BBD4 /* XCLocalSwiftPackageReference "Packages/DayShiftKit" */;
 			productName = DayShiftKit;
 		};
 /* End XCSwiftPackageProductDependency section */
