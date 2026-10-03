@@ -5,55 +5,56 @@
 //  Created by Alex W on 3/10/2026.
 //
 
-import WidgetKit
+import DayShiftKit
+import os
 import SwiftUI
+import WidgetKit
 
+/// Temporary widget for the shared-store spike (Section 9, Step 2):
+/// shows the latest plan title saved by the app.
 struct Provider: TimelineProvider {
+    private static let logger = Logger(
+        subsystem: "com.utsstudent.zhaoziying.DayShift",
+        category: "SharedStore"
+    )
+
     func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), emoji: "😀")
+        SimpleEntry(date: Date(), planTitle: nil)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), emoji: "😀")
-        completion(entry)
+        completion(SimpleEntry(date: Date(), planTitle: latestPlanTitle()))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [SimpleEntry] = []
-
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-        let currentDate = Date()
-        for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, emoji: "😀")
-            entries.append(entry)
-        }
-
-        let timeline = Timeline(entries: entries, policy: .atEnd)
-        completion(timeline)
+        let entry = SimpleEntry(date: Date(), planTitle: latestPlanTitle())
+        // The app reloads the widget after saving, so no scheduled refresh is needed.
+        completion(Timeline(entries: [entry], policy: .never))
     }
 
-//    func relevances() async -> WidgetRelevances<Void> {
-//        // Generate a list containing the contexts this widget is relevant in.
-//    }
+    /// Falls back to the empty state if the shared store can't be opened.
+    private func latestPlanTitle() -> String? {
+        do {
+            return try SpikePlanStore().latestPlanTitle()
+        } catch {
+            Self.logger.error("Couldn't open the shared store: \(String(describing: error), privacy: .public)")
+            return nil
+        }
+    }
 }
 
 struct SimpleEntry: TimelineEntry {
     let date: Date
-    let emoji: String
+    let planTitle: String?
 }
 
 struct DayShiftWidgetEntryView : View {
     var entry: Provider.Entry
 
     var body: some View {
-        VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
-
-            Text("Emoji:")
-            Text(entry.emoji)
-        }
+        Text(entry.planTitle ?? "Your day is clear.")
+            .font(.headline)
+            .multilineTextAlignment(.center)
     }
 }
 
@@ -62,23 +63,17 @@ struct DayShiftWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            if #available(iOS 17.0, *) {
-                DayShiftWidgetEntryView(entry: entry)
-                    .containerBackground(.fill.tertiary, for: .widget)
-            } else {
-                DayShiftWidgetEntryView(entry: entry)
-                    .padding()
-                    .background()
-            }
+            DayShiftWidgetEntryView(entry: entry)
+                .containerBackground(.fill.tertiary, for: .widget)
         }
-        .configurationDisplayName("My Widget")
-        .description("This is an example widget.")
+        .configurationDisplayName("DayShift")
+        .description("Shows your latest plan.")
     }
 }
 
 #Preview(as: .systemSmall) {
     DayShiftWidget()
 } timeline: {
-    SimpleEntry(date: .now, emoji: "😀")
-    SimpleEntry(date: .now, emoji: "🤩")
+    SimpleEntry(date: .now, planTitle: "Run · Enmore Park")
+    SimpleEntry(date: .now, planTitle: nil)
 }
