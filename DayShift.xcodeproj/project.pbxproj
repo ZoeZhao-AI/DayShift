@@ -6,14 +6,98 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9B6E4D723070FF8200A4BBD4 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6E4D713070FF8200A4BBD4 /* WidgetKit.framework */; };
+		9B6E4D743070FF8200A4BBD4 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6E4D733070FF8200A4BBD4 /* SwiftUI.framework */; };
+		9B6E4D7F3070FF8400A4BBD4 /* DayShiftWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9B6E4D6F3070FF8200A4BBD4 /* DayShiftWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9B6E4D993071003E00A4BBD4 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6E4D983071003E00A4BBD4 /* UserNotifications.framework */; };
+		9B6E4D9B3071003E00A4BBD4 /* UserNotificationsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6E4D9A3071003E00A4BBD4 /* UserNotificationsUI.framework */; };
+		9B6E4DA53071003E00A4BBD4 /* DayShiftNotificationContent.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9B6E4D973071003E00A4BBD4 /* DayShiftNotificationContent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9B6E4DD6307102C100A4BBD4 /* DayShiftKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B6E4DD5307102C100A4BBD4 /* DayShiftKit */; };
+		9B6E4DD83071046100A4BBD4 /* DayShiftKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B6E4DD73071046100A4BBD4 /* DayShiftKit */; };
+		9B6E4DEF3071054300A4BBD4 /* DayShiftKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9B6E4DEE3071054300A4BBD4 /* DayShiftKit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9B6E4D7D3070FF8400A4BBD4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B6E4D3B3070FA5400A4BBD4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B6E4D6E3070FF8200A4BBD4;
+			remoteInfo = DayShiftWidgetExtension;
+		};
+		9B6E4DA33071003E00A4BBD4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B6E4D3B3070FA5400A4BBD4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B6E4D963071003E00A4BBD4;
+			remoteInfo = DayShiftNotificationContent;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9B6E4D803070FF8400A4BBD4 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				9B6E4D7F3070FF8400A4BBD4 /* DayShiftWidgetExtension.appex in Embed Foundation Extensions */,
+				9B6E4DA53071003E00A4BBD4 /* DayShiftNotificationContent.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		9B6E4D433070FA5400A4BBD4 /* DayShift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DayShift.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B6E4D6F3070FF8200A4BBD4 /* DayShiftWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DayShiftWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B6E4D713070FF8200A4BBD4 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		9B6E4D733070FF8200A4BBD4 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		9B6E4D973071003E00A4BBD4 /* DayShiftNotificationContent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DayShiftNotificationContent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B6E4D983071003E00A4BBD4 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
+		9B6E4D9A3071003E00A4BBD4 /* UserNotificationsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotificationsUI.framework; path = System/Library/Frameworks/UserNotificationsUI.framework; sourceTree = SDKROOT; };
+		9B6E4DF13071064300A4BBD4 /* DayShiftWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DayShiftWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9B6E4D833070FF8400A4BBD4 /* Exceptions for "DayShiftWidget" folder in "DayShiftWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9B6E4D6E3070FF8200A4BBD4 /* DayShiftWidgetExtension */;
+		};
+		9B6E4DA83071003E00A4BBD4 /* Exceptions for "DayShiftNotificationContent" folder in "DayShiftNotificationContent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9B6E4D963071003E00A4BBD4 /* DayShiftNotificationContent */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9B6E4D453070FA5400A4BBD4 /* DayShift */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = DayShift;
+			sourceTree = "<group>";
+		};
+		9B6E4D753070FF8200A4BBD4 /* DayShiftWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9B6E4D833070FF8400A4BBD4 /* Exceptions for "DayShiftWidget" folder in "DayShiftWidgetExtension" target */,
+			);
+			path = DayShiftWidget;
+			sourceTree = "<group>";
+		};
+		9B6E4D9C3071003E00A4BBD4 /* DayShiftNotificationContent */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9B6E4DA83071003E00A4BBD4 /* Exceptions for "DayShiftNotificationContent" folder in "DayShiftNotificationContent" target */,
+			);
+			path = DayShiftNotificationContent;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -23,6 +107,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B6E4DEF3071054300A4BBD4 /* DayShiftKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B6E4D6C3070FF8200A4BBD4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B6E4D743070FF8200A4BBD4 /* SwiftUI.framework in Frameworks */,
+				9B6E4D723070FF8200A4BBD4 /* WidgetKit.framework in Frameworks */,
+				9B6E4DD83071046100A4BBD4 /* DayShiftKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B6E4D943071003E00A4BBD4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B6E4D9B3071003E00A4BBD4 /* UserNotificationsUI.framework in Frameworks */,
+				9B6E4D993071003E00A4BBD4 /* UserNotifications.framework in Frameworks */,
+				9B6E4DD6307102C100A4BBD4 /* DayShiftKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -32,7 +137,11 @@
 		9B6E4D3A3070FA5400A4BBD4 = {
 			isa = PBXGroup;
 			children = (
+				9B6E4DF13071064300A4BBD4 /* DayShiftWidgetExtension.entitlements */,
 				9B6E4D453070FA5400A4BBD4 /* DayShift */,
+				9B6E4D753070FF8200A4BBD4 /* DayShiftWidget */,
+				9B6E4D9C3071003E00A4BBD4 /* DayShiftNotificationContent */,
+				9B6E4D703070FF8200A4BBD4 /* Frameworks */,
 				9B6E4D443070FA5400A4BBD4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +150,21 @@
 			isa = PBXGroup;
 			children = (
 				9B6E4D433070FA5400A4BBD4 /* DayShift.app */,
+				9B6E4D6F3070FF8200A4BBD4 /* DayShiftWidgetExtension.appex */,
+				9B6E4D973071003E00A4BBD4 /* DayShiftNotificationContent.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9B6E4D703070FF8200A4BBD4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9B6E4D713070FF8200A4BBD4 /* WidgetKit.framework */,
+				9B6E4D733070FF8200A4BBD4 /* SwiftUI.framework */,
+				9B6E4D983071003E00A4BBD4 /* UserNotifications.framework */,
+				9B6E4D9A3071003E00A4BBD4 /* UserNotificationsUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -55,20 +177,70 @@
 				9B6E4D3F3070FA5400A4BBD4 /* Sources */,
 				9B6E4D403070FA5400A4BBD4 /* Frameworks */,
 				9B6E4D413070FA5400A4BBD4 /* Resources */,
+				9B6E4D803070FF8400A4BBD4 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				9B6E4D7E3070FF8400A4BBD4 /* PBXTargetDependency */,
+				9B6E4DA43071003E00A4BBD4 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				9B6E4D453070FA5400A4BBD4 /* DayShift */,
 			);
 			name = DayShift;
 			packageProductDependencies = (
+				9B6E4DEE3071054300A4BBD4 /* DayShiftKit */,
 			);
 			productName = DayShift;
 			productReference = 9B6E4D433070FA5400A4BBD4 /* DayShift.app */;
 			productType = "com.apple.product-type.application";
+		};
+		9B6E4D6E3070FF8200A4BBD4 /* DayShiftWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B6E4D843070FF8400A4BBD4 /* Build configuration list for PBXNativeTarget "DayShiftWidgetExtension" */;
+			buildPhases = (
+				9B6E4D6B3070FF8200A4BBD4 /* Sources */,
+				9B6E4D6C3070FF8200A4BBD4 /* Frameworks */,
+				9B6E4D6D3070FF8200A4BBD4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9B6E4D753070FF8200A4BBD4 /* DayShiftWidget */,
+			);
+			name = DayShiftWidgetExtension;
+			packageProductDependencies = (
+				9B6E4DD73071046100A4BBD4 /* DayShiftKit */,
+			);
+			productName = DayShiftWidgetExtension;
+			productReference = 9B6E4D6F3070FF8200A4BBD4 /* DayShiftWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		9B6E4D963071003E00A4BBD4 /* DayShiftNotificationContent */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B6E4DA93071003E00A4BBD4 /* Build configuration list for PBXNativeTarget "DayShiftNotificationContent" */;
+			buildPhases = (
+				9B6E4D933071003E00A4BBD4 /* Sources */,
+				9B6E4D943071003E00A4BBD4 /* Frameworks */,
+				9B6E4D953071003E00A4BBD4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9B6E4D9C3071003E00A4BBD4 /* DayShiftNotificationContent */,
+			);
+			name = DayShiftNotificationContent;
+			packageProductDependencies = (
+				9B6E4DD5307102C100A4BBD4 /* DayShiftKit */,
+			);
+			productName = DayShiftNotificationContent;
+			productReference = 9B6E4D973071003E00A4BBD4 /* DayShiftNotificationContent.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -83,6 +255,12 @@
 					9B6E4D423070FA5400A4BBD4 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
+					9B6E4D6E3070FF8200A4BBD4 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					9B6E4D963071003E00A4BBD4 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
 				};
 			};
 			buildConfigurationList = 9B6E4D3E3070FA5400A4BBD4 /* Build configuration list for PBXProject "DayShift" */;
@@ -94,18 +272,37 @@
 			);
 			mainGroup = 9B6E4D3A3070FA5400A4BBD4;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9B6E4DD4307102C100A4BBD4 /* XCLocalSwiftPackageReference "Packages/DayShiftKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9B6E4D443070FA5400A4BBD4 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				9B6E4D423070FA5400A4BBD4 /* DayShift */,
+				9B6E4D6E3070FF8200A4BBD4 /* DayShiftWidgetExtension */,
+				9B6E4D963071003E00A4BBD4 /* DayShiftNotificationContent */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		9B6E4D413070FA5400A4BBD4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B6E4D6D3070FF8200A4BBD4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B6E4D953071003E00A4BBD4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +319,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9B6E4D6B3070FF8200A4BBD4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B6E4D933071003E00A4BBD4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9B6E4D7E3070FF8400A4BBD4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9B6E4D6E3070FF8200A4BBD4 /* DayShiftWidgetExtension */;
+			targetProxy = 9B6E4D7D3070FF8400A4BBD4 /* PBXContainerItemProxy */;
+		};
+		9B6E4DA43071003E00A4BBD4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9B6E4D963071003E00A4BBD4 /* DayShiftNotificationContent */;
+			targetProxy = 9B6E4DA33071003E00A4BBD4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		9B6E4D4C3070FA5600A4BBD4 /* Debug */ = {
@@ -178,7 +402,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -236,7 +460,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -251,6 +475,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = DayShift/DayShift.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3BD5MKBV35;
@@ -266,7 +491,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = group.com.utsstudent.zhaoziying.dayshift.DayShift;
+				PRODUCT_BUNDLE_IDENTIFIER = com.utsstudent.zhaoziying.DayShift;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -283,6 +508,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = DayShift/DayShift.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 3BD5MKBV35;
@@ -298,11 +524,135 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = group.com.utsstudent.zhaoziying.dayshift.DayShift;
+				PRODUCT_BUNDLE_IDENTIFIER = com.utsstudent.zhaoziying.DayShift;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9B6E4D813070FF8400A4BBD4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = DayShiftWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3BD5MKBV35;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DayShiftWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DayShiftWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.utsstudent.zhaoziying.DayShift.DayShiftWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9B6E4D823070FF8400A4BBD4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = DayShiftWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3BD5MKBV35;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DayShiftWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DayShiftWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.utsstudent.zhaoziying.DayShift.DayShiftWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9B6E4DA63071003E00A4BBD4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DayShiftNotificationContent/DayShiftNotificationContent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3BD5MKBV35;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DayShiftNotificationContent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DayShiftNotificationContent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.utsstudent.zhaoziying.DayShift.DayShiftNotificationContent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9B6E4DA73071003E00A4BBD4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DayShiftNotificationContent/DayShiftNotificationContent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3BD5MKBV35;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DayShiftNotificationContent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DayShiftNotificationContent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.utsstudent.zhaoziying.DayShift.DayShiftNotificationContent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -331,7 +681,49 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		9B6E4D843070FF8400A4BBD4 /* Build configuration list for PBXNativeTarget "DayShiftWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B6E4D813070FF8400A4BBD4 /* Debug */,
+				9B6E4D823070FF8400A4BBD4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9B6E4DA93071003E00A4BBD4 /* Build configuration list for PBXNativeTarget "DayShiftNotificationContent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B6E4DA63071003E00A4BBD4 /* Debug */,
+				9B6E4DA73071003E00A4BBD4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		9B6E4DD4307102C100A4BBD4 /* XCLocalSwiftPackageReference "Packages/DayShiftKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/DayShiftKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9B6E4DD5307102C100A4BBD4 /* DayShiftKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DayShiftKit;
+		};
+		9B6E4DD73071046100A4BBD4 /* DayShiftKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B6E4DD4307102C100A4BBD4 /* XCLocalSwiftPackageReference "Packages/DayShiftKit" */;
+			productName = DayShiftKit;
+		};
+		9B6E4DEE3071054300A4BBD4 /* DayShiftKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B6E4DD4307102C100A4BBD4 /* XCLocalSwiftPackageReference "Packages/DayShiftKit" */;
+			productName = DayShiftKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9B6E4D3B3070FA5400A4BBD4 /* Project object */;
 }
