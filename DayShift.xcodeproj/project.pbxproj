@@ -10,6 +10,9 @@
 		9B6E4D723070FF8200A4BBD4 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6E4D713070FF8200A4BBD4 /* WidgetKit.framework */; };
 		9B6E4D743070FF8200A4BBD4 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6E4D733070FF8200A4BBD4 /* SwiftUI.framework */; };
 		9B6E4D7F3070FF8400A4BBD4 /* DayShiftWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9B6E4D6F3070FF8200A4BBD4 /* DayShiftWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9B6E4D993071003E00A4BBD4 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6E4D983071003E00A4BBD4 /* UserNotifications.framework */; };
+		9B6E4D9B3071003E00A4BBD4 /* UserNotificationsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B6E4D9A3071003E00A4BBD4 /* UserNotificationsUI.framework */; };
+		9B6E4DA53071003E00A4BBD4 /* DayShiftNotificationContent.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9B6E4D973071003E00A4BBD4 /* DayShiftNotificationContent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -19,6 +22,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 9B6E4D6E3070FF8200A4BBD4;
 			remoteInfo = DayShiftWidgetExtension;
+		};
+		9B6E4DA33071003E00A4BBD4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9B6E4D3B3070FA5400A4BBD4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9B6E4D963071003E00A4BBD4;
+			remoteInfo = DayShiftNotificationContent;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -30,6 +40,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				9B6E4D7F3070FF8400A4BBD4 /* DayShiftWidgetExtension.appex in Embed Foundation Extensions */,
+				9B6E4DA53071003E00A4BBD4 /* DayShiftNotificationContent.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -41,6 +52,9 @@
 		9B6E4D6F3070FF8200A4BBD4 /* DayShiftWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DayShiftWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B6E4D713070FF8200A4BBD4 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		9B6E4D733070FF8200A4BBD4 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		9B6E4D973071003E00A4BBD4 /* DayShiftNotificationContent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DayShiftNotificationContent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B6E4D983071003E00A4BBD4 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
+		9B6E4D9A3071003E00A4BBD4 /* UserNotificationsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotificationsUI.framework; path = System/Library/Frameworks/UserNotificationsUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -50,6 +64,13 @@
 				Info.plist,
 			);
 			target = 9B6E4D6E3070FF8200A4BBD4 /* DayShiftWidgetExtension */;
+		};
+		9B6E4DA83071003E00A4BBD4 /* Exceptions for "DayShiftNotificationContent" folder in "DayShiftNotificationContent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9B6E4D963071003E00A4BBD4 /* DayShiftNotificationContent */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -65,6 +86,14 @@
 				9B6E4D833070FF8400A4BBD4 /* Exceptions for "DayShiftWidget" folder in "DayShiftWidgetExtension" target */,
 			);
 			path = DayShiftWidget;
+			sourceTree = "<group>";
+		};
+		9B6E4D9C3071003E00A4BBD4 /* DayShiftNotificationContent */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9B6E4DA83071003E00A4BBD4 /* Exceptions for "DayShiftNotificationContent" folder in "DayShiftNotificationContent" target */,
+			);
+			path = DayShiftNotificationContent;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -86,6 +115,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9B6E4D943071003E00A4BBD4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B6E4D9B3071003E00A4BBD4 /* UserNotificationsUI.framework in Frameworks */,
+				9B6E4D993071003E00A4BBD4 /* UserNotifications.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -94,6 +132,7 @@
 			children = (
 				9B6E4D453070FA5400A4BBD4 /* DayShift */,
 				9B6E4D753070FF8200A4BBD4 /* DayShiftWidget */,
+				9B6E4D9C3071003E00A4BBD4 /* DayShiftNotificationContent */,
 				9B6E4D703070FF8200A4BBD4 /* Frameworks */,
 				9B6E4D443070FA5400A4BBD4 /* Products */,
 			);
@@ -104,6 +143,7 @@
 			children = (
 				9B6E4D433070FA5400A4BBD4 /* DayShift.app */,
 				9B6E4D6F3070FF8200A4BBD4 /* DayShiftWidgetExtension.appex */,
+				9B6E4D973071003E00A4BBD4 /* DayShiftNotificationContent.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -113,6 +153,8 @@
 			children = (
 				9B6E4D713070FF8200A4BBD4 /* WidgetKit.framework */,
 				9B6E4D733070FF8200A4BBD4 /* SwiftUI.framework */,
+				9B6E4D983071003E00A4BBD4 /* UserNotifications.framework */,
+				9B6E4D9A3071003E00A4BBD4 /* UserNotificationsUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -133,6 +175,7 @@
 			);
 			dependencies = (
 				9B6E4D7E3070FF8400A4BBD4 /* PBXTargetDependency */,
+				9B6E4DA43071003E00A4BBD4 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				9B6E4D453070FA5400A4BBD4 /* DayShift */,
@@ -166,6 +209,28 @@
 			productReference = 9B6E4D6F3070FF8200A4BBD4 /* DayShiftWidgetExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		9B6E4D963071003E00A4BBD4 /* DayShiftNotificationContent */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B6E4DA93071003E00A4BBD4 /* Build configuration list for PBXNativeTarget "DayShiftNotificationContent" */;
+			buildPhases = (
+				9B6E4D933071003E00A4BBD4 /* Sources */,
+				9B6E4D943071003E00A4BBD4 /* Frameworks */,
+				9B6E4D953071003E00A4BBD4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9B6E4D9C3071003E00A4BBD4 /* DayShiftNotificationContent */,
+			);
+			name = DayShiftNotificationContent;
+			packageProductDependencies = (
+			);
+			productName = DayShiftNotificationContent;
+			productReference = 9B6E4D973071003E00A4BBD4 /* DayShiftNotificationContent.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -180,6 +245,9 @@
 						CreatedOnToolsVersion = 26.4.1;
 					};
 					9B6E4D6E3070FF8200A4BBD4 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
+					9B6E4D963071003E00A4BBD4 = {
 						CreatedOnToolsVersion = 26.4.1;
 					};
 				};
@@ -200,6 +268,7 @@
 			targets = (
 				9B6E4D423070FA5400A4BBD4 /* DayShift */,
 				9B6E4D6E3070FF8200A4BBD4 /* DayShiftWidgetExtension */,
+				9B6E4D963071003E00A4BBD4 /* DayShiftNotificationContent */,
 			);
 		};
 /* End PBXProject section */
@@ -213,6 +282,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		9B6E4D6D3070FF8200A4BBD4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B6E4D953071003E00A4BBD4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -236,6 +312,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9B6E4D933071003E00A4BBD4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -243,6 +326,11 @@
 			isa = PBXTargetDependency;
 			target = 9B6E4D6E3070FF8200A4BBD4 /* DayShiftWidgetExtension */;
 			targetProxy = 9B6E4D7D3070FF8400A4BBD4 /* PBXContainerItemProxy */;
+		};
+		9B6E4DA43071003E00A4BBD4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9B6E4D963071003E00A4BBD4 /* DayShiftNotificationContent */;
+			targetProxy = 9B6E4DA33071003E00A4BBD4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -494,6 +582,64 @@
 			};
 			name = Release;
 		};
+		9B6E4DA63071003E00A4BBD4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3BD5MKBV35;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DayShiftNotificationContent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DayShiftNotificationContent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.utsstudent.zhaoziying.DayShift.DayShiftNotificationContent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9B6E4DA73071003E00A4BBD4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3BD5MKBV35;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = DayShiftNotificationContent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DayShiftNotificationContent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.utsstudent.zhaoziying.DayShift.DayShiftNotificationContent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -520,6 +666,15 @@
 			buildConfigurations = (
 				9B6E4D813070FF8400A4BBD4 /* Debug */,
 				9B6E4D823070FF8400A4BBD4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9B6E4DA93071003E00A4BBD4 /* Build configuration list for PBXNativeTarget "DayShiftNotificationContent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B6E4DA63071003E00A4BBD4 /* Debug */,
+				9B6E4DA73071003E00A4BBD4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
