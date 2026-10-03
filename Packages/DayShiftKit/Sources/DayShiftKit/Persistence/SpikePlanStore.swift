@@ -1,10 +1,16 @@
 import CoreData
 import Foundation
+import os
 
 /// Temporary store for the shared-store spike (Section 9, Step 2).
 /// Proves the app can save a plan the widget can read. Replaced by
 /// ActivityRepository in feature/repositories.
 public final class SpikePlanStore {
+    private static let logger = Logger(
+        subsystem: "com.utsstudent.zhaoziying.DayShift",
+        category: "SharedStore"
+    )
+
     private let stack: CoreDataStack
 
     public init(appGroupIdentifier: String = AppGroup.identifier) throws {
@@ -31,7 +37,12 @@ public final class SpikePlanStore {
             let request = ActivityEntity.fetchRequest()
             request.sortDescriptors = [NSSortDescriptor(key: "start", ascending: false)]
             request.fetchLimit = 1
-            return (try? context.fetch(request))?.first?.title
+            do {
+                return try context.fetch(request).first?.title
+            } catch {
+                Self.logger.error("Couldn't read the latest plan: \(String(describing: error), privacy: .public)")
+                return nil
+            }
         }
     }
 }
