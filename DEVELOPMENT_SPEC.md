@@ -674,6 +674,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | Open-Meteo: request `timeformat=unixtime`, accept a list or an object, match results to requested coordinates by order (5.1) | Checked against live responses: they return grid-point coordinates, and unix times avoid parsing local times on daylight-saving days. Parameter names in 5.1 are current |
 | 4 Oct 2026 | A plan with no hourly conditions gets a `.conditions` tip "Weather and air quality for this time aren't available." (3.2) | Hours with missing values are skipped when decoding; a plan without conditions must not look good without saying so |
 | 4 Oct 2026 | With public transport, trips of 15 minutes or less on foot are walked (5.2) | The prototype shows "Marrickville Metro · 8 min walk" for Lin, who travels by public transport; nobody waits 10 minutes for a bus to go a few hundred metres |
+| 4 Oct 2026 | Step 6 uses a placeholder `NotificationScheduling` in the app that schedules nothing; Step 9 replaces it with the UNUserNotificationCenter scheduler | Use cases 3.1 and 3.2 need the protocol now; notifications and the content extension are built in Step 9 (feature/notifications) |
 
 ---
 
