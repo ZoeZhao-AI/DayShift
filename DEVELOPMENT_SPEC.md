@@ -518,7 +518,7 @@ Deep links: dayshift://today, dayshift://plan/<id>, dayshift://options/<id>.
 ### 7.3 Screens
 | Prototype reference | View | Uses |
 |---|---|---|
-| Today, TodayEmpty, TodayBanners, TodayUpdated | TodayView | CheckUpcomingPlansUseCase; ActivityRepository (read) |
+| Today, TodayEmpty, TodayBanners, TodayUpdated | TodayView (incl. "Coming up") | CheckUpcomingPlansUseCase; ActivityRepository (read: today and the next 7 days) |
 | PlanDetailRun/Focus/Grocery/Call | PlanDetailView | saved PlanCheck; delete via ActivityRepository; chart from ConditionsService |
 | OptionsRun/Focus/Grocery/None | OptionsView | SuggestAlternativesUseCase, AcceptAlternativeUseCase |
 | PlanEditor, PlanEditorError | PlanEditorView | PlanActivityUseCase |
@@ -540,6 +540,10 @@ workplace card, "Best times today".
 - Estimates labelled "estimate". Unknown hours: "Opening hours not confirmed."
 - Errors: `errorDescription` bold, `recoverySuggestion` below. Form errors inline;
   "Save plan" disabled while an inline error is shown.
+- Today has a "Coming up" section below "Your plans": plans for the next 7 days,
+  grouped by day ("Tomorrow", "Tuesday 6 Oct"). Future plans are not checked
+  (3.2 checks today only), so they show "Checked on the day" in grey. Tapping one
+  opens Plan Detail, where it can be edited or deleted.
 - Dynamic Type supported; icons have VoiceOver labels.
 
 ---
@@ -688,6 +692,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | Time outside on the way: walking counts the whole trip, public transport a fixed 4 minutes, driving 0; the trip compares all of Lin's limits, for indoor places only (3.2) | The prototype shows "12 min by bus" with "UV 9 · 4 min outside"; outdoor plans are already checked over the plan itself |
 | 4 Oct 2026 | Temporary "Add sample places" button on Today saves Lin's four places through PlaceRepository; Step 10 removes it | Plans need saved places before My Places and the Place Editor exist (Step 10) |
 | 4 Oct 2026 | ViewModels may read data from service protocols as well as repository protocols (1.3) | The Plan Detail chart needs the forecast for the plan's place; reading it through ConditionsService (cached) is read-only and needs no business rule |
+| 4 Oct 2026 | Today gets a "Coming up" section with plans for the next 7 days, shown as "Checked on the day" (7.3, 7.4) | Lin couldn't see plans saved for another day, so it looked as if nothing was saved; future plans aren't checked until their day |
 
 ---
 
