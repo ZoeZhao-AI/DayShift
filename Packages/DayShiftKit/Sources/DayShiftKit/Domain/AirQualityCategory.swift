@@ -23,6 +23,19 @@ public enum AirQualityCategory: String, CaseIterable, Codable, Hashable, Sendabl
     }
 }
 
+extension AirQualityCategory {
+    /// How the category is written for Lin, e.g. "Poor", "Very poor".
+    public var name: String {
+        switch self {
+        case .good: return "Good"
+        case .fair: return "Fair"
+        case .poor: return "Poor"
+        case .veryPoor: return "Very poor"
+        case .extremelyPoor: return "Extremely poor"
+        }
+    }
+}
+
 extension AirQualityCategory: Comparable {
     /// A category is "less than" another when its air is better.
     public static func < (lhs: Self, rhs: Self) -> Bool {

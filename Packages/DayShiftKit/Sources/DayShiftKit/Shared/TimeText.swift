@@ -14,6 +14,17 @@ public enum TimeText {
         return time(date, calendar: calendar)
     }
 
+    /// Drops ":00" on the hour, as in "Smoke until 10 am" or "Open until 6 pm".
+    public static func shortTime(_ date: Date, calendar: Calendar = .current) -> String {
+        let full = time(date, calendar: calendar)
+        return full.replacingOccurrences(of: ":00 ", with: " ")
+    }
+
+    /// Minutes after midnight, e.g. 1080 → "6 pm".
+    public static func shortTime(minutesAfterMidnight minutes: Int) -> String {
+        time(minutesAfterMidnight: minutes).replacingOccurrences(of: ":00 ", with: " ")
+    }
+
     private static func formatter(timeZone: TimeZone) -> DateFormatter {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_AU")
