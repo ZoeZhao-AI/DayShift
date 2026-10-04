@@ -2,11 +2,14 @@ import Foundation
 
 /// Travel time from straight-line distance (Section 5.2): haversine distance
 /// × 1.3 for roads, at a typical speed per mode, rounded up to whole minutes.
-/// Public transport adds 10 minutes of waiting. The same place is 0 minutes.
+/// Public transport adds 10 minutes of waiting, but a trip that takes
+/// 15 minutes or less on foot is walked instead. The same place is 0 minutes.
 public struct StraightLineTravelTimeService: TravelTimeService {
     static let earthRadiusKm = 6371.0
     static let roadFactor = 1.3
     static let publicTransportWaitingMinutes = 10
+    /// Nobody waits for a bus to go a few hundred metres.
+    static let longestWalkInsteadOfPublicTransportMinutes = 15
 
     public init() {}
 
@@ -15,9 +18,23 @@ public struct StraightLineTravelTimeService: TravelTimeService {
             return TravelEstimate(minutes: 0, mode: mode)
         }
         let roadKm = Self.straightLineKm(from: origin, to: destination) * Self.roadFactor
-        let travelMinutes = Int((roadKm / Self.speedKmh(for: mode) * 60).rounded(.up))
-        let waitingMinutes = mode == .publicTransport ? Self.publicTransportWaitingMinutes : 0
-        return TravelEstimate(minutes: travelMinutes + waitingMinutes, mode: mode)
+
+        if mode == .publicTransport {
+            let walkingMinutes = Self.minutes(roadKm: roadKm, mode: .walking)
+            if walkingMinutes <= Self.longestWalkInsteadOfPublicTransportMinutes {
+                return TravelEstimate(minutes: walkingMinutes, mode: .walking)
+            }
+            return TravelEstimate(
+                minutes: Self.minutes(roadKm: roadKm, mode: .publicTransport) + Self.publicTransportWaitingMinutes,
+                mode: .publicTransport
+            )
+        }
+        return TravelEstimate(minutes: Self.minutes(roadKm: roadKm, mode: mode), mode: mode)
+    }
+
+    /// Time on the move, rounded up to whole minutes.
+    private static func minutes(roadKm: Double, mode: TravelMode) -> Int {
+        Int((roadKm / speedKmh(for: mode) * 60).rounded(.up))
     }
 
     static func speedKmh(for mode: TravelMode) -> Double {

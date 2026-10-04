@@ -425,7 +425,8 @@ Enums stored as String raw values. Optional numbers use NSNumber.
 `travelEstimate(from: Coordinate, to: Coordinate, mode: TravelMode) -> TravelEstimate`
 `StraightLineTravelTimeService`: haversine distance × 1.3 (road factor);
 walking 4.5 km/h; public transport 20 km/h + 10 min waiting; driving 30 km/h.
-Round up to whole minutes. Same place → 0.
+Round up to whole minutes. Same place → 0. With public transport, a trip that takes
+15 minutes or less on foot is walked instead (estimate mode `.walking`).
 
 ### 5.3 PlaceGeocoding
 `coordinates(for address: String) async throws -> (latitude, longitude, suburb?)`
@@ -672,6 +673,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | `plansNeedingAttention` excludes cancelled plans | A cancelled plan can keep an old "needsAttention" check status and would still appear in the widget |
 | 4 Oct 2026 | Open-Meteo: request `timeformat=unixtime`, accept a list or an object, match results to requested coordinates by order (5.1) | Checked against live responses: they return grid-point coordinates, and unix times avoid parsing local times on daylight-saving days. Parameter names in 5.1 are current |
 | 4 Oct 2026 | A plan with no hourly conditions gets a `.conditions` tip "Weather and air quality for this time aren't available." (3.2) | Hours with missing values are skipped when decoding; a plan without conditions must not look good without saying so |
+| 4 Oct 2026 | With public transport, trips of 15 minutes or less on foot are walked (5.2) | The prototype shows "Marrickville Metro · 8 min walk" for Lin, who travels by public transport; nobody waits 10 minutes for a bus to go a few hundred metres |
 
 ---
 
