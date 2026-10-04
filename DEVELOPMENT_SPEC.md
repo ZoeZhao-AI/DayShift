@@ -268,6 +268,10 @@ For each plan:
   the preferences for the type's sensitivities. For indoor uncooled places, once
   the day's outdoor temperature exceeds `uncooledHeatLimitC`, the place is too hot
   from that hour to the end of the day. Travel time outside: under 10 min → tip.
+  On the way (indoor places only; outdoor plans are already checked hour by hour):
+  compare the hours between leave-by and start against all of Lin's limits.
+  Minutes outside: walking = the whole trip, public transport = 4 (to and from
+  the stop), driving = 0.
   If no hourly conditions cover the plan (missing from the forecast), add a
   `.conditions` tip "Weather and air quality for this time aren't available."
   instead of treating the conditions as fine.
@@ -680,6 +684,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | Step 6 uses a placeholder `NotificationScheduling` in the app that schedules nothing; Step 9 replaces it with the UNUserNotificationCenter scheduler | Use cases 3.1 and 3.2 need the protocol now; notifications and the content extension are built in Step 9 (feature/notifications) |
 | 4 Oct 2026 | Added the `PlanChecking` protocol (3.1) | PlanActivityUseCase runs the check after saving, but use cases may only depend on protocols (1.3) |
 | 4 Oct 2026 | Added `PlanActivityError.notEnoughTimeForNextPlan` (3.1) | The gap rule also applies to the plan after; "You need … minutes to get here after …" only describes the plan before |
+| 4 Oct 2026 | Time outside on the way: walking counts the whole trip, public transport a fixed 4 minutes, driving 0; the trip compares all of Lin's limits, for indoor places only (3.2) | The prototype shows "12 min by bus" with "UV 9 · 4 min outside"; outdoor plans are already checked over the plan itself |
 
 ---
 
