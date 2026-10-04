@@ -1,10 +1,10 @@
 import Foundation
 
-/// What an activity is for.
+/// What an activity is for. Wording matches the prototype.
 public enum ActivityPurpose: String, CaseIterable, Codable, Hashable, Sendable {
     case exercise
     case work
-    case social
-    case leisure
-    case errand
+    case socialising
+    case relaxationAndCreative
+    case errands
 }
