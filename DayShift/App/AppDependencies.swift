@@ -11,6 +11,7 @@ final class AppDependencies {
     let checkUpcomingPlans: CheckUpcomingPlansUseCase
     let planActivity: PlanActivityUseCase
     let today: TodayViewModel
+    private let calendar: Calendar
 
     /// - Throws: `CoreDataStackError` if the shared store can't be opened.
     init() throws {
@@ -49,6 +50,7 @@ final class AppDependencies {
         self.preferences = preferences
         self.checkUpcomingPlans = checkUpcomingPlans
         self.planActivity = planActivity
+        self.calendar = calendar
         today = TodayViewModel(
             checkUpcomingPlans: checkUpcomingPlans,
             activities: activities,
@@ -56,5 +58,10 @@ final class AppDependencies {
             alertsStatus: NotificationSettingsAlertsStatus(),
             calendar: calendar
         )
+    }
+
+    /// A Plan Editor for a new plan, or for `plan` when editing.
+    func makePlanEditor(editing plan: PlannedActivity? = nil) -> PlanEditorViewModel {
+        PlanEditorViewModel(editing: plan, planActivity: planActivity, places: places, calendar: calendar)
     }
 }

@@ -17,7 +17,7 @@ struct DayShiftApp: App {
         WindowGroup {
             switch dependencies {
             case .success(let dependencies):
-                TodayView(viewModel: dependencies.today)
+                TodayView(viewModel: dependencies.today, makePlanEditor: { dependencies.makePlanEditor() })
             case .failure(let error):
                 ErrorScreen(error: error)
             }

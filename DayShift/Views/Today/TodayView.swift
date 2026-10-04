@@ -6,11 +6,14 @@ import UIKit
 /// TodayEmpty, TodayBanners).
 struct TodayView: View {
     @State private var viewModel: TodayViewModel
+    @State private var planEditor: PlanEditorViewModel?
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
+    private let makePlanEditor: () -> PlanEditorViewModel
 
-    init(viewModel: TodayViewModel) {
+    init(viewModel: TodayViewModel, makePlanEditor: @escaping () -> PlanEditorViewModel) {
         _viewModel = State(initialValue: viewModel)
+        self.makePlanEditor = makePlanEditor
     }
 
     var body: some View {
@@ -54,6 +57,7 @@ struct TodayView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 8)
+                        Button("Plan an activity") { planEditor = makePlanEditor() }
                     }
                 } else if !viewModel.rows.isEmpty {
                     Section("Your plans") {
@@ -82,7 +86,22 @@ struct TodayView: View {
                 }
             }
             .navigationTitle("Today")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        planEditor = makePlanEditor()
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("Plan an activity")
+                }
+            }
             .refreshable { await viewModel.refresh() }
+            .sheet(item: $planEditor) { editor in
+                PlanEditorView(viewModel: editor) {
+                    Task { await viewModel.refresh() }
+                }
+            }
         }
         .tint(.teal)
         .onChange(of: scenePhase, initial: true) { _, phase in
@@ -168,6 +187,6 @@ struct StatusLabel: View {
 
 #Preview {
     if let dependencies = try? AppDependencies() {
-        TodayView(viewModel: dependencies.today)
+        TodayView(viewModel: dependencies.today, makePlanEditor: { dependencies.makePlanEditor() })
     }
 }
