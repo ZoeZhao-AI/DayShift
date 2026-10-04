@@ -37,9 +37,9 @@ extension ActivityEntity {
     }
 
     /// Copies the plan's own fields. If the start, duration or place changes,
-    /// the saved check no longer describes this plan, so it is cleared;
-    /// otherwise (e.g. only the title changes) it is kept.
-    /// Notified reasons are always kept.
+    /// it is a new situation: the saved check no longer describes this plan,
+    /// and Lin should be alerted again, so the check and the notified reasons
+    /// are cleared. Otherwise (e.g. only the title changes) both are kept.
     /// - Parameter placeEntity: the stored place with the same id as `plan.place`.
     func update(from plan: PlannedActivity, placeEntity: PlaceEntity?) throws {
         guard placeEntity?.id == plan.place?.id else {
@@ -69,6 +69,7 @@ extension ActivityEntity {
 
         if changesWhenOrWhere {
             clearCheck()
+            notifiedReasonKeys = nil
         }
     }
 
