@@ -41,8 +41,8 @@ final class TodayViewModel {
     private(set) var alertsAreOff = false
     private(set) var showsAddSamplePlaces = false
     private(set) var hasLoaded = false
-    /// A short confirmation after saving a plan for another day, which Today
-    /// doesn't list, e.g. "Saved for Monday 5 Oct. You'll see it on Today that day."
+    /// A short confirmation after saving a plan for another day, which is
+    /// listed under "Coming up" rather than "Your plans", e.g. "Saved for Monday 5 Oct."
     private(set) var savedConfirmation: String?
     private var plansByID: [UUID: PlannedActivity] = [:]
 
@@ -151,14 +151,14 @@ final class TodayViewModel {
     }
 
     /// After the Plan Editor saves: refreshes Today, and confirms a plan saved
-    /// for another day, since it won't appear in the list.
+    /// for another day, since it doesn't appear under "Your plans".
     func planWasSaved(_ plan: PlannedActivity?, now: Date = Date()) async {
         await refresh(now: now)
         guard let plan, !calendar.isDate(plan.start, inSameDayAs: now) else {
             savedConfirmation = nil
             return
         }
-        savedConfirmation = "Saved for \(dayText(plan.start)). You'll see it on Today that day."
+        savedConfirmation = "Saved for \(dayText(plan.start))."
     }
 
     func dismissSavedConfirmation() {
