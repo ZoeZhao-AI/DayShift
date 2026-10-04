@@ -25,6 +25,17 @@ public enum TimeText {
         time(minutesAfterMidnight: minutes).replacingOccurrences(of: ":00 ", with: " ")
     }
 
+    /// A plan's times, e.g. "7:00–7:45 am" or "11:30 am–1:00 pm".
+    public static func range(_ start: Date, _ end: Date, calendar: Calendar = .current) -> String {
+        let startText = time(start, calendar: calendar)
+        let endText = time(end, calendar: calendar)
+        let startHalf = calendar.component(.hour, from: start) < 12
+        let endHalf = calendar.component(.hour, from: end) < 12
+        guard startHalf == endHalf else { return "\(startText)–\(endText)" }
+        let startWithoutHalf = startText.replacingOccurrences(of: startHalf ? " am" : " pm", with: "")
+        return "\(startWithoutHalf)–\(endText)"
+    }
+
     private static func formatter(timeZone: TimeZone) -> DateFormatter {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_AU")
