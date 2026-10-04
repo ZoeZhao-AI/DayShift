@@ -111,7 +111,8 @@ DayShift/
 - Use cases depend on Domain and on PROTOCOLS only.
 - Persistence, Conditions, Travel and app Services implement those protocols.
 - ViewModels: all writes and all business rules go through use cases.
-  Simple read-only lists (e.g. My Places) may use a repository protocol directly.
+  Read-only data may come from a repository or service protocol directly
+  (e.g. My Places from PlaceRepository, the Plan Detail chart from ConditionsService).
   ViewModels never import CoreData.
 - Views depend on ViewModels only.
 - WidgetKit and UserNotifications are imported only in app Services and
@@ -518,7 +519,7 @@ Deep links: dayshift://today, dayshift://plan/<id>, dayshift://options/<id>.
 | Prototype reference | View | Uses |
 |---|---|---|
 | Today, TodayEmpty, TodayBanners, TodayUpdated | TodayView | CheckUpcomingPlansUseCase; ActivityRepository (read) |
-| PlanDetailRun/Focus/Grocery/Call | PlanDetailView | saved PlanCheck; delete via ActivityRepository |
+| PlanDetailRun/Focus/Grocery/Call | PlanDetailView | saved PlanCheck; delete via ActivityRepository; chart from ConditionsService |
 | OptionsRun/Focus/Grocery/None | OptionsView | SuggestAlternativesUseCase, AcceptAlternativeUseCase |
 | PlanEditor, PlanEditorError | PlanEditorView | PlanActivityUseCase |
 | MyPlaces | MyPlacesView | PlaceRepository (read) |
@@ -686,6 +687,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | Added `PlanActivityError.notEnoughTimeForNextPlan` (3.1) | The gap rule also applies to the plan after; "You need … minutes to get here after …" only describes the plan before |
 | 4 Oct 2026 | Time outside on the way: walking counts the whole trip, public transport a fixed 4 minutes, driving 0; the trip compares all of Lin's limits, for indoor places only (3.2) | The prototype shows "12 min by bus" with "UV 9 · 4 min outside"; outdoor plans are already checked over the plan itself |
 | 4 Oct 2026 | Temporary "Add sample places" button on Today saves Lin's four places through PlaceRepository; Step 10 removes it | Plans need saved places before My Places and the Place Editor exist (Step 10) |
+| 4 Oct 2026 | ViewModels may read data from service protocols as well as repository protocols (1.3) | The Plan Detail chart needs the forecast for the plan's place; reading it through ConditionsService (cached) is read-only and needs no business rule |
 
 ---
 
