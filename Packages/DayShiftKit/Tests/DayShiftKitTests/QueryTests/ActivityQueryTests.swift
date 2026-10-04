@@ -17,26 +17,15 @@ private final class StoredPlan: NSObject {
 }
 
 struct ActivityQueryTests {
-    private let sydney: Calendar = {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Australia/Sydney")!
-        return calendar
-    }()
-
-    /// Thursday 8 October 2026 at the given time, Sydney time.
-    private func thursday(_ hour: Int, _ minute: Int = 0) -> Date {
-        sydney.date(from: DateComponents(year: 2026, month: 10, day: 8, hour: hour, minute: minute))!
-    }
-
     @Test("Checkable plans include upcoming planned and adjusted plans, and exclude started and cancelled ones")
     func checkablePlansAreUpcomingAndNotCancelled() {
-        let now = thursday(6, 40)
-        let predicate = ActivityQuery.checkablePlans(on: now, now: now, calendar: sydney)
+        let now = LinsThursday.time(6, 40)
+        let predicate = ActivityQuery.checkablePlans(on: now, now: now, calendar: LinsThursday.sydney)
 
-        let upcomingRun = StoredPlan(start: thursday(7), status: .planned)
-        let movedGroceryRun = StoredPlan(start: thursday(18, 30), status: .adjusted)
-        let startedWalk = StoredPlan(start: thursday(6), status: .planned)
-        let cancelledCoffee = StoredPlan(start: thursday(9), status: .cancelled)
+        let upcomingRun = StoredPlan(start: LinsThursday.time(7), status: .planned)
+        let movedGroceryRun = StoredPlan(start: LinsThursday.time(18, 30), status: .adjusted)
+        let startedWalk = StoredPlan(start: LinsThursday.time(6), status: .planned)
+        let cancelledCoffee = StoredPlan(start: LinsThursday.time(9), status: .cancelled)
 
         #expect(predicate.evaluate(with: upcomingRun))
         #expect(predicate.evaluate(with: movedGroceryRun))
@@ -46,10 +35,10 @@ struct ActivityQueryTests {
 
     @Test("A cancelled plan never needs attention")
     func cancelledPlanNeverNeedsAttention() {
-        let predicate = ActivityQuery.plansNeedingAttention(on: thursday(6, 40), calendar: sydney)
+        let predicate = ActivityQuery.plansNeedingAttention(on: LinsThursday.time(6, 40), calendar: LinsThursday.sydney)
 
-        let smokyRun = StoredPlan(start: thursday(7), status: .planned, checkStatus: .needsAttention)
-        let cancelledSmokyRun = StoredPlan(start: thursday(7), status: .cancelled, checkStatus: .needsAttention)
+        let smokyRun = StoredPlan(start: LinsThursday.time(7), status: .planned, checkStatus: .needsAttention)
+        let cancelledSmokyRun = StoredPlan(start: LinsThursday.time(7), status: .cancelled, checkStatus: .needsAttention)
 
         #expect(predicate.evaluate(with: smokyRun))
         #expect(!predicate.evaluate(with: cancelledSmokyRun))
