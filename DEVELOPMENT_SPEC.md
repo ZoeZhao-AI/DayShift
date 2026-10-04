@@ -111,7 +111,8 @@ DayShift/
 - Use cases depend on Domain and on PROTOCOLS only.
 - Persistence, Conditions, Travel and app Services implement those protocols.
 - ViewModels: all writes and all business rules go through use cases.
-  Simple read-only lists (e.g. My Places) may use a repository protocol directly.
+  Read-only data may come from a repository or service protocol directly
+  (e.g. My Places from PlaceRepository, the Plan Detail chart from ConditionsService).
   ViewModels never import CoreData.
 - Views depend on ViewModels only.
 - WidgetKit and UserNotifications are imported only in app Services and
@@ -244,7 +245,8 @@ Rules:
 - No conflicts with other plans that day (gap rule, using travel estimates).
 - If the place has known opening hours, it must be open for the whole plan.
 - In-person activity types only; online only if the type `canBeOnline`.
-After saving: run the check for this plan, refresh the widget, schedule
+After saving: run the check for this plan (through the `PlanChecking` protocol,
+which CheckUpcomingPlansUseCase provides), refresh the widget, schedule
 (or reschedule) the leave reminder for in-person plans.
 Errors (`PlanActivityError`):
 - `startsInThePast` — "This plan starts in the past." / "Choose a start time later than now."
@@ -254,6 +256,8 @@ Errors (`PlanActivityError`):
   "Choose another time, or shorten one of the plans."
 - `notEnoughTimeToGetThere(title, minutes)` — "You need 25 minutes to get here after Focus work." /
   "Start later, or choose a place closer to your previous plan."
+- `notEnoughTimeForNextPlan(title, minutes)` — "You need 20 minutes to get to Grocery run after this plan." /
+  "Start earlier, or choose a place closer to your next plan."
 - `placeClosed(name)` — "Newtown Library is closed for part of this plan." /
   "Check the opening hours in My Places, or choose another place."
 - `onlineNotAvailable(type)` — "Run can't be done online." / "Choose a place for this plan."
@@ -265,6 +269,10 @@ For each plan:
   the preferences for the type's sensitivities. For indoor uncooled places, once
   the day's outdoor temperature exceeds `uncooledHeatLimitC`, the place is too hot
   from that hour to the end of the day. Travel time outside: under 10 min → tip.
+  On the way (indoor places only; outdoor plans are already checked hour by hour):
+  compare the hours between leave-by and start against all of Lin's limits.
+  Minutes outside: walking = the whole trip, public transport = 4 (to and from
+  the stop), driving = 0.
   If no hourly conditions cover the plan (missing from the forecast), add a
   `.conditions` tip "Weather and air quality for this time aren't available."
   instead of treating the conditions as fine.
@@ -510,8 +518,8 @@ Deep links: dayshift://today, dayshift://plan/<id>, dayshift://options/<id>.
 ### 7.3 Screens
 | Prototype reference | View | Uses |
 |---|---|---|
-| Today, TodayEmpty, TodayBanners, TodayUpdated | TodayView | CheckUpcomingPlansUseCase; ActivityRepository (read) |
-| PlanDetailRun/Focus/Grocery/Call | PlanDetailView | saved PlanCheck; delete via ActivityRepository |
+| Today, TodayEmpty, TodayBanners, TodayUpdated | TodayView (incl. "Coming up") | CheckUpcomingPlansUseCase; ActivityRepository (read: today and the next 7 days) |
+| PlanDetailRun/Focus/Grocery/Call | PlanDetailView | saved PlanCheck; delete via ActivityRepository; chart from ConditionsService |
 | OptionsRun/Focus/Grocery/None | OptionsView | SuggestAlternativesUseCase, AcceptAlternativeUseCase |
 | PlanEditor, PlanEditorError | PlanEditorView | PlanActivityUseCase |
 | MyPlaces | MyPlacesView | PlaceRepository (read) |
@@ -532,6 +540,10 @@ workplace card, "Best times today".
 - Estimates labelled "estimate". Unknown hours: "Opening hours not confirmed."
 - Errors: `errorDescription` bold, `recoverySuggestion` below. Form errors inline;
   "Save plan" disabled while an inline error is shown.
+- Today has a "Coming up" section below "Your plans": plans for the next 7 days,
+  grouped by day ("Tomorrow", "Tuesday 6 Oct"). Future plans are not checked
+  (3.2 checks today only), so they show "Checked on the day" in grey. Tapping one
+  opens Plan Detail, where it can be edited or deleted.
 - Dynamic Type supported; icons have VoiceOver labels.
 
 ---
@@ -674,6 +686,13 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | Open-Meteo: request `timeformat=unixtime`, accept a list or an object, match results to requested coordinates by order (5.1) | Checked against live responses: they return grid-point coordinates, and unix times avoid parsing local times on daylight-saving days. Parameter names in 5.1 are current |
 | 4 Oct 2026 | A plan with no hourly conditions gets a `.conditions` tip "Weather and air quality for this time aren't available." (3.2) | Hours with missing values are skipped when decoding; a plan without conditions must not look good without saying so |
 | 4 Oct 2026 | With public transport, trips of 15 minutes or less on foot are walked (5.2) | The prototype shows "Marrickville Metro · 8 min walk" for Lin, who travels by public transport; nobody waits 10 minutes for a bus to go a few hundred metres |
+| 4 Oct 2026 | Step 6 uses a placeholder `NotificationScheduling` in the app that schedules nothing; Step 9 replaces it with the UNUserNotificationCenter scheduler | Use cases 3.1 and 3.2 need the protocol now; notifications and the content extension are built in Step 9 (feature/notifications) |
+| 4 Oct 2026 | Added the `PlanChecking` protocol (3.1) | PlanActivityUseCase runs the check after saving, but use cases may only depend on protocols (1.3) |
+| 4 Oct 2026 | Added `PlanActivityError.notEnoughTimeForNextPlan` (3.1) | The gap rule also applies to the plan after; "You need … minutes to get here after …" only describes the plan before |
+| 4 Oct 2026 | Time outside on the way: walking counts the whole trip, public transport a fixed 4 minutes, driving 0; the trip compares all of Lin's limits, for indoor places only (3.2) | The prototype shows "12 min by bus" with "UV 9 · 4 min outside"; outdoor plans are already checked over the plan itself |
+| 4 Oct 2026 | Temporary "Add sample places" button on Today saves Lin's four places through PlaceRepository; Step 10 removes it | Plans need saved places before My Places and the Place Editor exist (Step 10) |
+| 4 Oct 2026 | ViewModels may read data from service protocols as well as repository protocols (1.3) | The Plan Detail chart needs the forecast for the plan's place; reading it through ConditionsService (cached) is read-only and needs no business rule |
+| 4 Oct 2026 | Today gets a "Coming up" section with plans for the next 7 days, shown as "Checked on the day" (7.3, 7.4) | Lin couldn't see plans saved for another day, so it looked as if nothing was saved; future plans aren't checked until their day |
 
 ---
 
