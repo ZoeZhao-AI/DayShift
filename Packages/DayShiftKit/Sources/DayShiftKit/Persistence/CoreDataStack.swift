@@ -58,6 +58,10 @@ public final class CoreDataStack {
             url: groupURL.appendingPathComponent("\(Self.modelName).sqlite")
         )
         description.shouldAddStoreAsynchronously = false
+        // The app and the extensions write to the same store; history lets
+        // the app pick up their changes when it becomes active.
+        description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
         container.persistentStoreDescriptions = [description]
 
         var loadError: Error?

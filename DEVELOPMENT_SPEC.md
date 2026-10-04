@@ -351,8 +351,9 @@ Enums stored as String raw values. Optional numbers use NSNumber.
 - id UUID, typeID, title, modeRaw, statusRaw
 - start Date, end Date (stored for overlap queries), durationMinutes Int16
 - movableWindowStart Date?, movableWindowEnd Date?, allowsPlaceChange Bool
-- checkStatusRaw ("looksGood" / "needsAttention"), checkSummary String?,
-  checkedAt Date?, leaveBy Date?, travelMinutes NSNumber?,
+- checkStatusRaw String? ("looksGood" / "needsAttention"; nil until first checked),
+  checkSummary String?, checkedAt Date?, leaveBy Date?, travelMinutes NSNumber?,
+  travelModeRaw String?,
   findingsData Binary? (JSON-encoded [PlanFinding])
 - notifiedReasonKeys String? (e.g. "poorAirQuality,heat")
 - `place` → PlaceEntity, to-one, delete rule Nullify
@@ -371,12 +372,14 @@ Enums stored as String raw values. Optional numbers use NSNumber.
   `statusRaw IN {"planned","adjusted"}` → "today's plans that haven't started"
 - `plans(overlapping interval:, excluding ids:)` — `start < %@ AND end > %@ AND
   NOT (id IN %@) AND statusRaw != "cancelled"`
-- `plansNeedingAttention(on day:)` — same day AND `checkStatusRaw == "needsAttention"`
+- `plansNeedingAttention(on day:)` — same day AND `checkStatusRaw == "needsAttention"` AND
+  `statusRaw != "cancelled"`
 
 ### 4.3 Repository Protocols (async throws, domain types only)
 - `ActivityRepository`: `plans(on:)`, `checkablePlans(on:now:)`,
   `plans(overlapping:excluding:)`, `save(_:)`, `delete(id:)`,
-  `saveCheck(_ check: PlanCheck)`, `markNotified(planID:reasonKeys:)`,
+  `saveCheck(_ check: PlanCheck)`, `check(for planID: UUID) -> PlanCheck?`,
+  `markNotified(planID:reasonKeys:)`, `notifiedReasonKeys(planID: UUID) -> Set<String>`,
   `applyAdjustment(changedPlans: [PlannedActivity], records: [AdjustmentRecord])` (atomic)
 - `PlaceRepository`: `allPlaces()`, `place(named:)`, `save(_:)`, `home()`
 - `PreferencesRepository`: `load()` (defaults if none), `save(_:)`
@@ -654,6 +657,11 @@ Record every change to this spec during development (commit as `docs:`).
 |---|---|---|
 | 3 Oct 2026 | Scope reduced to 6 use cases for a 4-day build | Due Wed 7 Oct |
 | 3 Oct 2026 | "Use this plan" from a notification opens the app instead of applying in the extension | Lower risk; extension stays display-only |
+| 4 Oct 2026 | Added `ActivityRepository.check(for:)` to read a plan's saved PlanCheck | Plan Detail and Today (3.2, "Checked <time>") show saved checks, but 4.3 had no way to read them |
+| 4 Oct 2026 | Added `ActivityRepository.notifiedReasonKeys(planID:)` | 3.2 alerts once per plan and reason, which needs the reasons already notified; 4.3 could only write them |
+| 4 Oct 2026 | `ActivityEntity.checkStatusRaw` is optional (nil until the plan is first checked) | A new plan has no check yet; storing "looksGood" before checking would be wrong |
+| 4 Oct 2026 | Added `ActivityEntity.travelModeRaw` (String?) | A saved PlanCheck's TravelEstimate needs its mode; reading it from current preferences would be wrong after Lin changes travel mode |
+| 4 Oct 2026 | `plansNeedingAttention` excludes cancelled plans | A cancelled plan can keep an old "needsAttention" check status and would still appear in the widget |
 
 ---
 

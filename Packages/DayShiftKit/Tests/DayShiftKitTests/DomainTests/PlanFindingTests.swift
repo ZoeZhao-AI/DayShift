@@ -23,4 +23,15 @@ struct PlanFindingTests {
 
         #expect(severity == .problem)
     }
+
+    @Test("A stored finding that marks crowds as a problem is rejected")
+    func storedCrowdsProblemIsRejected() {
+        let storedJSON = Data("""
+            [{"factor": "crowds", "severity": "problem", "message": "Usually busy · estimate"}]
+            """.utf8)
+
+        #expect(throws: PlanFindingError.crowdsCannotBeAProblem) {
+            try JSONDecoder().decode([PlanFinding].self, from: storedJSON)
+        }
+    }
 }
