@@ -36,12 +36,22 @@ extension ActivityEntity {
         )
     }
 
-    /// Copies the plan's own fields. The saved check and notified reasons are left as they are.
+    /// Copies the plan's own fields. If the start, duration or place changes,
+    /// the saved check no longer describes this plan, so it is cleared;
+    /// otherwise (e.g. only the title changes) it is kept.
+    /// Notified reasons are always kept.
     /// - Parameter placeEntity: the stored place with the same id as `plan.place`.
     func update(from plan: PlannedActivity, placeEntity: PlaceEntity?) throws {
         guard placeEntity?.id == plan.place?.id else {
             throw PersistenceMappingError.mismatchedRelationship(entity: Self.entityName, relationship: "place")
         }
+        // A newly inserted entity has no stored values or check to compare with.
+        let changesWhenOrWhere = !isInserted && (
+            start != plan.start
+                || Int(durationMinutes) != plan.durationMinutes
+                || place?.id != placeEntity?.id
+        )
+
         id = plan.id
         typeID = plan.typeID
         title = plan.title
@@ -56,6 +66,21 @@ extension ActivityEntity {
         movableWindowEnd = plan.flexibility.movableWindow?.end
         allowsPlaceChange = plan.flexibility.allowsPlaceChange
         place = placeEntity
+
+        if changesWhenOrWhere {
+            clearCheck()
+        }
+    }
+
+    /// Removes the saved check, so the plan reads as not checked yet.
+    private func clearCheck() {
+        checkStatusRaw = nil
+        checkSummary = nil
+        checkedAt = nil
+        leaveBy = nil
+        travelMinutes = nil
+        travelModeRaw = nil
+        findingsData = nil
     }
 
     /// The last saved check, or nil if the plan hasn't been checked yet.
