@@ -1,8 +1,65 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="1" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="ActivityEntity" representedClassName="ActivityEntity" syncable="YES">
+        <attribute name="allowsPlaceChange" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="checkedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="checkStatusRaw" optional="YES" attributeType="String"/>
+        <attribute name="checkSummary" optional="YES" attributeType="String"/>
+        <attribute name="durationMinutes" attributeType="Integer 16" usesScalarValueType="YES"/>
+        <attribute name="end" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="findingsData" optional="YES" attributeType="Binary"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="leaveBy" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="modeRaw" attributeType="String"/>
+        <attribute name="movableWindowEnd" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="movableWindowStart" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="notifiedReasonKeys" optional="YES" attributeType="String"/>
         <attribute name="start" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="statusRaw" attributeType="String"/>
         <attribute name="title" attributeType="String"/>
+        <attribute name="travelMinutes" optional="YES" attributeType="Integer 16" usesScalarValueType="NO"/>
+        <attribute name="typeID" attributeType="String"/>
+        <relationship name="adjustments" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="AdjustmentRecordEntity" inverseName="activity" inverseEntity="AdjustmentRecordEntity"/>
+        <relationship name="place" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlaceEntity" inverseName="activities" inverseEntity="PlaceEntity"/>
+    </entity>
+    <entity name="AdjustmentRecordEntity" representedClassName="AdjustmentRecordEntity" syncable="YES">
+        <attribute name="acceptedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="kindRaw" attributeType="String"/>
+        <attribute name="newPlaceName" optional="YES" attributeType="String"/>
+        <attribute name="newStart" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="previousPlaceName" optional="YES" attributeType="String"/>
+        <attribute name="previousStart" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="reason" attributeType="String"/>
+        <relationship name="activity" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ActivityEntity" inverseName="adjustments" inverseEntity="ActivityEntity"/>
+    </entity>
+    <entity name="PlaceEntity" representedClassName="PlaceEntity" syncable="YES">
+        <attribute name="address" attributeType="String"/>
+        <attribute name="closedWeekdays" attributeType="String"/>
+        <attribute name="closesAt" optional="YES" attributeType="Integer 16" usesScalarValueType="NO"/>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isAlwaysOpen" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isCooled" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isIndoor" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="kindRaw" attributeType="String"/>
+        <attribute name="latitude" attributeType="Double" usesScalarValueType="YES"/>
+        <attribute name="longitude" attributeType="Double" usesScalarValueType="YES"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="opensAt" optional="YES" attributeType="Integer 16" usesScalarValueType="NO"/>
+        <attribute name="suburb" optional="YES" attributeType="String"/>
+        <attribute name="uncooledHeatLimitC" optional="YES" attributeType="Double" usesScalarValueType="NO"/>
+        <relationship name="activities" optional="YES" toMany="YES" deletionRule="Deny" destinationEntity="ActivityEntity" inverseName="place" inverseEntity="ActivityEntity"/>
+    </entity>
+    <entity name="PreferencesEntity" representedClassName="PreferencesEntity" syncable="YES">
+        <attribute name="earliestPlanTime" attributeType="Integer 16" usesScalarValueType="YES"/>
+        <attribute name="latestPlanTime" attributeType="Integer 16" usesScalarValueType="YES"/>
+        <attribute name="leaveReminderMinutes" attributeType="Integer 16" usesScalarValueType="YES"/>
+        <attribute name="maxApparentTemperatureC" attributeType="Double" usesScalarValueType="YES"/>
+        <attribute name="maxRainProbability" attributeType="Integer 16" usesScalarValueType="YES"/>
+        <attribute name="maxUVIndex" attributeType="Double" usesScalarValueType="YES"/>
+        <attribute name="maxWindGustsKmh" attributeType="Double" usesScalarValueType="YES"/>
+        <attribute name="minimumBufferMinutes" attributeType="Integer 16" usesScalarValueType="YES"/>
+        <attribute name="travelModeRaw" attributeType="String"/>
+        <attribute name="worstAcceptableAirQualityRaw" attributeType="String"/>
     </entity>
 </model>
