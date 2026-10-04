@@ -244,7 +244,8 @@ Rules:
 - No conflicts with other plans that day (gap rule, using travel estimates).
 - If the place has known opening hours, it must be open for the whole plan.
 - In-person activity types only; online only if the type `canBeOnline`.
-After saving: run the check for this plan, refresh the widget, schedule
+After saving: run the check for this plan (through the `PlanChecking` protocol,
+which CheckUpcomingPlansUseCase provides), refresh the widget, schedule
 (or reschedule) the leave reminder for in-person plans.
 Errors (`PlanActivityError`):
 - `startsInThePast` — "This plan starts in the past." / "Choose a start time later than now."
@@ -254,6 +255,8 @@ Errors (`PlanActivityError`):
   "Choose another time, or shorten one of the plans."
 - `notEnoughTimeToGetThere(title, minutes)` — "You need 25 minutes to get here after Focus work." /
   "Start later, or choose a place closer to your previous plan."
+- `notEnoughTimeForNextPlan(title, minutes)` — "You need 20 minutes to get to Grocery run after this plan." /
+  "Start earlier, or choose a place closer to your next plan."
 - `placeClosed(name)` — "Newtown Library is closed for part of this plan." /
   "Check the opening hours in My Places, or choose another place."
 - `onlineNotAvailable(type)` — "Run can't be done online." / "Choose a place for this plan."
@@ -675,6 +678,8 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | A plan with no hourly conditions gets a `.conditions` tip "Weather and air quality for this time aren't available." (3.2) | Hours with missing values are skipped when decoding; a plan without conditions must not look good without saying so |
 | 4 Oct 2026 | With public transport, trips of 15 minutes or less on foot are walked (5.2) | The prototype shows "Marrickville Metro · 8 min walk" for Lin, who travels by public transport; nobody waits 10 minutes for a bus to go a few hundred metres |
 | 4 Oct 2026 | Step 6 uses a placeholder `NotificationScheduling` in the app that schedules nothing; Step 9 replaces it with the UNUserNotificationCenter scheduler | Use cases 3.1 and 3.2 need the protocol now; notifications and the content extension are built in Step 9 (feature/notifications) |
+| 4 Oct 2026 | Added the `PlanChecking` protocol (3.1) | PlanActivityUseCase runs the check after saving, but use cases may only depend on protocols (1.3) |
+| 4 Oct 2026 | Added `PlanActivityError.notEnoughTimeForNextPlan` (3.1) | The gap rule also applies to the plan after; "You need … minutes to get here after …" only describes the plan before |
 
 ---
 
