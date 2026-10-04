@@ -13,9 +13,9 @@ final class TodayViewModel {
         case needsAttention
         /// Upcoming, with no saved check yet.
         case notCheckedYet
-        /// Started, with no saved check; it won't be checked any more.
+        /// Started; it can't be changed any more (3.4), so its last check isn't shown.
         case inProgress
-        /// Ended, with no saved check; it won't be checked any more.
+        /// Ended; its last check isn't shown.
         case done
     }
 
@@ -130,17 +130,24 @@ final class TodayViewModel {
 
     private func row(for plan: PlannedActivity, check: PlanCheck?, now: Date) -> PlanRow {
         let activityType = ActivityCatalogue.type(withID: plan.typeID)
+        // Once a plan has started Lin can't change it (3.4), so only upcoming
+        // plans show their check: status, reason and leave-by.
+        let upcomingCheck = plan.start > now ? check : nil
         let status: Status
-        switch check?.overallStatus {
-        case .needsAttention: status = .needsAttention
-        case .looksGood: status = .looksGood
-        case nil:
-            // Only plans that haven't started are checked (3.2).
-            status = plan.end <= now ? .done : plan.start <= now ? .inProgress : .notCheckedYet
+        if plan.end <= now {
+            status = .done
+        } else if plan.start <= now {
+            status = .inProgress
+        } else {
+            switch upcomingCheck?.overallStatus {
+            case .needsAttention: status = .needsAttention
+            case .looksGood: status = .looksGood
+            case nil: status = .notCheckedYet
+            }
         }
 
         var detail = plan.place?.name ?? "Online"
-        if let leaveBy = check?.leaveBy, let travel = check?.travel, travel.minutes > 0 {
+        if let leaveBy = upcomingCheck?.leaveBy, let travel = upcomingCheck?.travel, travel.minutes > 0 {
             detail += " · Leave by \(TimeText.time(leaveBy, calendar: calendar))"
         }
 
@@ -153,7 +160,7 @@ final class TodayViewModel {
             detail: detail,
             status: status,
             reason: status == .needsAttention
-                ? check?.findings.first { $0.severity == .problem }?.message
+                ? upcomingCheck?.findings.first { $0.severity == .problem }?.message
                 : nil,
             isMoved: plan.status == .adjusted
         )
