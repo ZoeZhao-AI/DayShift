@@ -154,6 +154,14 @@ struct StatusLabel: View {
             Label("Not checked yet", systemImage: "clock")
                 .foregroundStyle(.secondary)
                 .font(.subheadline)
+        case .inProgress:
+            Label("In progress", systemImage: "play.circle")
+                .foregroundStyle(.secondary)
+                .font(.subheadline)
+        case .done:
+            Label("Done", systemImage: "checkmark")
+                .foregroundStyle(.secondary)
+                .font(.subheadline)
         }
     }
 }

@@ -11,7 +11,12 @@ final class TodayViewModel {
     enum Status: Equatable {
         case looksGood
         case needsAttention
+        /// Upcoming, with no saved check yet.
         case notCheckedYet
+        /// Started, with no saved check; it won't be checked any more.
+        case inProgress
+        /// Ended, with no saved check; it won't be checked any more.
+        case done
     }
 
     struct PlanRow: Identifiable, Equatable {
@@ -106,7 +111,7 @@ final class TodayViewModel {
                 if let checkedAt = check?.checkedAt, checkedAt > (lastCheckedAt ?? .distantPast) {
                     lastCheckedAt = checkedAt
                 }
-                rows.append(row(for: plan, check: check))
+                rows.append(row(for: plan, check: check, now: now))
             }
             self.rows = rows
 
@@ -123,13 +128,15 @@ final class TodayViewModel {
         }
     }
 
-    private func row(for plan: PlannedActivity, check: PlanCheck?) -> PlanRow {
+    private func row(for plan: PlannedActivity, check: PlanCheck?, now: Date) -> PlanRow {
         let activityType = ActivityCatalogue.type(withID: plan.typeID)
         let status: Status
         switch check?.overallStatus {
         case .needsAttention: status = .needsAttention
         case .looksGood: status = .looksGood
-        case nil: status = .notCheckedYet
+        case nil:
+            // Only plans that haven't started are checked (3.2).
+            status = plan.end <= now ? .done : plan.start <= now ? .inProgress : .notCheckedYet
         }
 
         var detail = plan.place?.name ?? "Online"
