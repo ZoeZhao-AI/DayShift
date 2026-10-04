@@ -34,16 +34,10 @@ final class TodayViewModel {
         let isMoved: Bool
     }
 
-    /// An error in Lin's words: `title` in bold, `detail` below (7.4).
-    struct Banner: Equatable {
-        let title: String
-        let detail: String
-    }
-
     private(set) var weekday = ""
     private(set) var rows: [PlanRow] = []
     private(set) var footer: String?
-    private(set) var problemBanner: Banner?
+    private(set) var problemBanner: ErrorMessage?
     private(set) var alertsAreOff = false
     private(set) var showsAddSamplePlaces = false
     private(set) var hasLoaded = false
@@ -97,7 +91,7 @@ final class TodayViewModel {
                 try await places.save(place)
             }
         } catch {
-            problemBanner = Self.banner(for: error)
+            problemBanner = ErrorMessage(error)
         }
         await refresh()
     }
@@ -116,14 +110,14 @@ final class TodayViewModel {
             self.rows = rows
 
             if let checkError {
-                problemBanner = Self.banner(for: checkError)
+                problemBanner = ErrorMessage(checkError)
                 footer = lastCheckedAt.map { "Statuses from the last check at \(TimeText.time($0, calendar: calendar))." }
             } else {
                 problemBanner = nil
                 footer = "Checked \(TimeText.time(now, calendar: calendar))"
             }
         } catch {
-            problemBanner = Self.banner(for: error)
+            problemBanner = ErrorMessage(error)
             footer = nil
         }
     }
@@ -172,13 +166,5 @@ final class TodayViewModel {
             return true
         }
         return false
-    }
-
-    static func banner(for error: Error) -> Banner {
-        let localized = error as? LocalizedError
-        return Banner(
-            title: localized?.errorDescription ?? "Something went wrong.",
-            detail: localized?.recoverySuggestion ?? "Please try again."
-        )
     }
 }
