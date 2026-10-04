@@ -685,6 +685,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | Added the `PlanChecking` protocol (3.1) | PlanActivityUseCase runs the check after saving, but use cases may only depend on protocols (1.3) |
 | 4 Oct 2026 | Added `PlanActivityError.notEnoughTimeForNextPlan` (3.1) | The gap rule also applies to the plan after; "You need … minutes to get here after …" only describes the plan before |
 | 4 Oct 2026 | Time outside on the way: walking counts the whole trip, public transport a fixed 4 minutes, driving 0; the trip compares all of Lin's limits, for indoor places only (3.2) | The prototype shows "12 min by bus" with "UV 9 · 4 min outside"; outdoor plans are already checked over the plan itself |
+| 4 Oct 2026 | Temporary "Add sample places" button on Today saves Lin's four places through PlaceRepository; Step 10 removes it | Plans need saved places before My Places and the Place Editor exist (Step 10) |
 
 ---
 
