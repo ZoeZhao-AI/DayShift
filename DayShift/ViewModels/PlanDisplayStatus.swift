@@ -2,7 +2,8 @@ import DayShiftKit
 import Foundation
 
 /// What a plan's status says on Today and Plan Detail. Once a plan has
-/// started Lin can't change it (3.4), so only upcoming plans show their check.
+/// started Lin can't change it (3.4), so only upcoming plans today show their
+/// check. Plans on later days aren't checked until their day (7.4).
 enum PlanDisplayStatus: Equatable {
     case looksGood
     case needsAttention
@@ -12,12 +13,16 @@ enum PlanDisplayStatus: Equatable {
     case inProgress
     /// Ended; its last check isn't shown.
     case done
+    /// On a later day; it is checked on the day.
+    case checkedOnTheDay
 
-    init(plan: PlannedActivity, check: PlanCheck?, now: Date) {
+    init(plan: PlannedActivity, check: PlanCheck?, now: Date, calendar: Calendar) {
         if plan.end <= now {
             self = .done
         } else if plan.start <= now {
             self = .inProgress
+        } else if !calendar.isDate(plan.start, inSameDayAs: now) {
+            self = .checkedOnTheDay
         } else {
             switch check?.overallStatus {
             case .needsAttention: self = .needsAttention
@@ -27,8 +32,9 @@ enum PlanDisplayStatus: Equatable {
         }
     }
 
-    /// The check to show for a plan: its saved check while it is upcoming, otherwise none.
-    static func shownCheck(of plan: PlannedActivity, check: PlanCheck?, now: Date) -> PlanCheck? {
-        plan.start > now ? check : nil
+    /// The check to show for a plan: its saved check while it is upcoming
+    /// today, otherwise none.
+    static func shownCheck(of plan: PlannedActivity, check: PlanCheck?, now: Date, calendar: Calendar) -> PlanCheck? {
+        plan.start > now && calendar.isDate(plan.start, inSameDayAs: now) ? check : nil
     }
 }

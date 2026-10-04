@@ -70,14 +70,25 @@ struct TodayView: View {
                 } else if !viewModel.rows.isEmpty {
                     Section("Your plans") {
                         ForEach(viewModel.rows) { row in
-                            Button {
-                                if let plan = viewModel.plan(withID: row.id) {
-                                    path.append(makePlanDetail(plan))
-                                }
-                            } label: {
-                                PlanRowView(row: row)
+                            planButton(for: row)
+                        }
+                    }
+                }
+
+                ForEach(Array(viewModel.comingUp.enumerated()), id: \.element.id) { index, day in
+                    Section {
+                        ForEach(day.rows) { row in
+                            planButton(for: row)
+                        }
+                    } header: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            if index == 0 {
+                                Text("Coming up")
+                                    .font(.headline)
+                                    .foregroundStyle(Color.primary)
+                                    .textCase(nil)
                             }
-                            .foregroundStyle(Color.primary)
+                            Text(day.title)
                         }
                     }
                 }
@@ -141,6 +152,20 @@ struct TodayView: View {
                 Task { await viewModel.refresh() }
             }
         }
+    }
+}
+
+extension TodayView {
+    /// A plan row that opens Plan Detail.
+    private func planButton(for row: TodayViewModel.PlanRow) -> some View {
+        Button {
+            if let plan = viewModel.plan(withID: row.id) {
+                path.append(makePlanDetail(plan))
+            }
+        } label: {
+            PlanRowView(row: row)
+        }
+        .foregroundStyle(Color.primary)
     }
 }
 

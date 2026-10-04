@@ -26,6 +26,10 @@ struct StatusLabel: View {
             Label("Done", systemImage: "checkmark")
                 .foregroundStyle(.secondary)
                 .font(.subheadline)
+        case .checkedOnTheDay:
+            Label("Checked on the day", systemImage: "calendar")
+                .foregroundStyle(.secondary)
+                .font(.subheadline)
         }
     }
 }

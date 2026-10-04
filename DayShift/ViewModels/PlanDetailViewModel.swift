@@ -77,7 +77,7 @@ final class PlanDetailViewModel {
         self.notifications = notifications
         self.calendar = calendar
         self.now = now
-        status = PlanDisplayStatus(plan: plan, check: nil, now: now)
+        status = PlanDisplayStatus(plan: plan, check: nil, now: now, calendar: calendar)
     }
 
     /// e.g. "7:00 to 7:45 am".
@@ -101,8 +101,8 @@ final class PlanDetailViewModel {
                 plan = latest
             }
             let savedCheck = try await activities.check(for: plan.id)
-            status = PlanDisplayStatus(plan: plan, check: savedCheck, now: now)
-            let shownCheck = PlanDisplayStatus.shownCheck(of: plan, check: savedCheck, now: now)
+            status = PlanDisplayStatus(plan: plan, check: savedCheck, now: now, calendar: calendar)
+            let shownCheck = PlanDisplayStatus.shownCheck(of: plan, check: savedCheck, now: now, calendar: calendar)
             rows = shownCheck.map(Self.rows(from:)) ?? []
             checkedText = shownCheck.map { "Checked \(TimeText.time($0.checkedAt, calendar: calendar))" }
             note = Self.note(for: status)
@@ -163,6 +163,7 @@ final class PlanDetailViewModel {
         case .notCheckedYet: return "DayShift hasn't checked this plan yet. It checks your plans when you open the app."
         case .inProgress: return "This plan has started, so DayShift no longer checks it."
         case .done: return "This plan has finished."
+        case .checkedOnTheDay: return "DayShift checks this plan on the day. You can change it any time before then."
         case .looksGood, .needsAttention: return nil
         }
     }

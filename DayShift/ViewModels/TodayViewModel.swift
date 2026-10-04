@@ -23,8 +23,19 @@ final class TodayViewModel {
         let isMoved: Bool
     }
 
+    /// One day under "Coming up", e.g. "Tomorrow" or "Tuesday 6 Oct".
+    struct DayGroup: Identifiable, Equatable {
+        let id: Date
+        let title: String
+        let rows: [PlanRow]
+    }
+
+    /// How many days after today "Coming up" covers (7.4).
+    static let comingUpDays = 7
+
     private(set) var weekday = ""
     private(set) var rows: [PlanRow] = []
+    private(set) var comingUp: [DayGroup] = []
     private(set) var footer: String?
     private(set) var problemBanner: ErrorMessage?
     private(set) var alertsAreOff = false
@@ -107,7 +118,24 @@ final class TodayViewModel {
                 rows.append(row(for: plan, check: check, now: now))
             }
             self.rows = rows
-            plansByID = Dictionary(uniqueKeysWithValues: plans.map { ($0.id, $0) })
+
+            // Later days aren't checked yet, so their checks aren't read.
+            var groups: [DayGroup] = []
+            var laterPlans: [PlannedActivity] = []
+            let startOfToday = calendar.startOfDay(for: now)
+            for offset in 1...Self.comingUpDays {
+                guard let day = calendar.date(byAdding: .day, value: offset, to: startOfToday) else { continue }
+                let dayPlans = try await activities.plans(on: day)
+                guard !dayPlans.isEmpty else { continue }
+                laterPlans += dayPlans
+                groups.append(DayGroup(
+                    id: day,
+                    title: offset == 1 ? "Tomorrow" : dayText(day),
+                    rows: dayPlans.map { row(for: $0, check: nil, now: now) }
+                ))
+            }
+            comingUp = groups
+            plansByID = Dictionary(uniqueKeysWithValues: (plans + laterPlans).map { ($0.id, $0) })
 
             if let checkError {
                 problemBanner = ErrorMessage(checkError)
@@ -130,15 +158,19 @@ final class TodayViewModel {
             savedConfirmation = nil
             return
         }
-        let day = plan.start.formatted(
-            Date.FormatStyle(locale: Locale(identifier: "en_AU"), calendar: calendar, timeZone: calendar.timeZone)
-                .weekday(.wide).day().month(.abbreviated)
-        )
-        savedConfirmation = "Saved for \(day). You'll see it on Today that day."
+        savedConfirmation = "Saved for \(dayText(plan.start)). You'll see it on Today that day."
     }
 
     func dismissSavedConfirmation() {
         savedConfirmation = nil
+    }
+
+    /// e.g. "Monday 5 Oct".
+    private func dayText(_ date: Date) -> String {
+        date.formatted(
+            Date.FormatStyle(locale: Locale(identifier: "en_AU"), calendar: calendar, timeZone: calendar.timeZone)
+                .weekday(.wide).day().month(.abbreviated)
+        )
     }
 
     /// The plan behind a row, to open Plan Detail.
@@ -148,8 +180,8 @@ final class TodayViewModel {
 
     private func row(for plan: PlannedActivity, check: PlanCheck?, now: Date) -> PlanRow {
         let activityType = ActivityCatalogue.type(withID: plan.typeID)
-        let upcomingCheck = PlanDisplayStatus.shownCheck(of: plan, check: check, now: now)
-        let status = PlanDisplayStatus(plan: plan, check: check, now: now)
+        let upcomingCheck = PlanDisplayStatus.shownCheck(of: plan, check: check, now: now, calendar: calendar)
+        let status = PlanDisplayStatus(plan: plan, check: check, now: now, calendar: calendar)
 
         var detail = plan.place?.name ?? "Online"
         if let leaveBy = upcomingCheck?.leaveBy, let travel = upcomingCheck?.travel, travel.minutes > 0 {
