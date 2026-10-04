@@ -145,4 +145,42 @@ struct CheckUpcomingPlansUseCaseTests {
         #expect(alert.reasonKeys == ["poorAirQuality"])
         #expect(setup.activities.storedNotifiedReasons[setup.day.run.id] == ["poorAirQuality"])
     }
+
+    @Test("A plan saved for another day is not alerted early")
+    func planForAnotherDayIsNotAlertedEarly() async throws {
+        // Friday's 7:00 am run, saved on Thursday at 6:40 am. Friday has the
+        // same smoky morning as Thursday.
+        let oneDay: TimeInterval = 24 * 60 * 60
+        var fridayRun: PlannedActivity?
+        let setup = try Setup { day in
+            let run = try PlannedActivity(
+                typeID: ActivityCatalogue.run.id, title: "Run",
+                start: day.time(7).addingTimeInterval(oneDay), durationMinutes: 45,
+                place: day.enmorePark, mode: .inPerson,
+                flexibility: .fixed
+            )
+            fridayRun = run
+            return [run]
+        }
+        let run = try #require(fridayRun)
+        let fridayHours = try setup.day.hourlyConditions().map {
+            try HourlyConditions(
+                time: $0.time.addingTimeInterval(oneDay),
+                temperatureC: $0.temperatureC,
+                apparentTemperatureC: $0.apparentTemperatureC,
+                precipitationProbability: $0.precipitationProbability,
+                uvIndex: $0.uvIndex,
+                windGustsKmh: $0.windGustsKmh,
+                pm25: $0.pm25
+            )
+        }
+        setup.conditions.setHours(fridayHours, at: setup.day.enmorePark.coordinate)
+
+        let check = try await setup.useCase.checkPlan(run, now: setup.day.now)
+
+        // The smoke is found, but Lin hears about it on Friday, not now.
+        #expect(check.overallStatus == .needsAttention)
+        #expect(setup.notifications.planAffectedAlerts.isEmpty)
+        #expect(setup.activities.storedNotifiedReasons[run.id] == nil)
+    }
 }
