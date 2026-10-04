@@ -30,4 +30,16 @@ struct StraightLineTravelTimeServiceTests {
         // 13.0 km at 20 km/h is 39.03 min, rounded up to 40, plus 10 min waiting.
         #expect(estimate == TravelEstimate(minutes: 50, mode: .publicTransport))
     }
+
+    @Test("A short trip is walked even when Lin travels by public transport")
+    func shortTripIsWalked() {
+        // 0.005° of latitude due south is 0.56 km in a straight line, 0.72 km by road:
+        // 9.6 min on foot, rounded up to 10, which is within 15 minutes.
+        let enmore = Coordinate(latitude: -33.900, longitude: 151.17)
+        let fiveHundredMetresSouth = Coordinate(latitude: -33.905, longitude: 151.17)
+
+        let estimate = service.travelEstimate(from: enmore, to: fiveHundredMetresSouth, mode: .publicTransport)
+
+        #expect(estimate == TravelEstimate(minutes: 10, mode: .walking))
+    }
 }
