@@ -8,17 +8,6 @@ import Observation
 @MainActor
 @Observable
 final class TodayViewModel {
-    enum Status: Equatable {
-        case looksGood
-        case needsAttention
-        /// Upcoming, with no saved check yet.
-        case notCheckedYet
-        /// Started; it can't be changed any more (3.4), so its last check isn't shown.
-        case inProgress
-        /// Ended; its last check isn't shown.
-        case done
-    }
-
     struct PlanRow: Identifiable, Equatable {
         let id: UUID
         let symbolName: String
@@ -28,7 +17,7 @@ final class TodayViewModel {
         let title: String
         /// e.g. "Enmore Park · Leave by 6:55 am", or "Online".
         let detail: String
-        let status: Status
+        let status: PlanDisplayStatus
         /// The first problem, shown when the plan needs attention.
         let reason: String?
         let isMoved: Bool
@@ -129,21 +118,8 @@ final class TodayViewModel {
 
     private func row(for plan: PlannedActivity, check: PlanCheck?, now: Date) -> PlanRow {
         let activityType = ActivityCatalogue.type(withID: plan.typeID)
-        // Once a plan has started Lin can't change it (3.4), so only upcoming
-        // plans show their check: status, reason and leave-by.
-        let upcomingCheck = plan.start > now ? check : nil
-        let status: Status
-        if plan.end <= now {
-            status = .done
-        } else if plan.start <= now {
-            status = .inProgress
-        } else {
-            switch upcomingCheck?.overallStatus {
-            case .needsAttention: status = .needsAttention
-            case .looksGood: status = .looksGood
-            case nil: status = .notCheckedYet
-            }
-        }
+        let upcomingCheck = PlanDisplayStatus.shownCheck(of: plan, check: check, now: now)
+        let status = PlanDisplayStatus(plan: plan, check: check, now: now)
 
         var detail = plan.place?.name ?? "Online"
         if let leaveBy = upcomingCheck?.leaveBy, let travel = upcomingCheck?.travel, travel.minutes > 0 {
