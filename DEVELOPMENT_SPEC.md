@@ -376,7 +376,8 @@ Enums stored as String raw values. Optional numbers use NSNumber.
 ### 4.3 Repository Protocols (async throws, domain types only)
 - `ActivityRepository`: `plans(on:)`, `checkablePlans(on:now:)`,
   `plans(overlapping:excluding:)`, `save(_:)`, `delete(id:)`,
-  `saveCheck(_ check: PlanCheck)`, `markNotified(planID:reasonKeys:)`,
+  `saveCheck(_ check: PlanCheck)`, `check(for planID: UUID) -> PlanCheck?`,
+  `markNotified(planID:reasonKeys:)`, `notifiedReasonKeys(planID: UUID) -> Set<String>`,
   `applyAdjustment(changedPlans: [PlannedActivity], records: [AdjustmentRecord])` (atomic)
 - `PlaceRepository`: `allPlaces()`, `place(named:)`, `save(_:)`, `home()`
 - `PreferencesRepository`: `load()` (defaults if none), `save(_:)`
@@ -654,6 +655,8 @@ Record every change to this spec during development (commit as `docs:`).
 |---|---|---|
 | 3 Oct 2026 | Scope reduced to 6 use cases for a 4-day build | Due Wed 7 Oct |
 | 3 Oct 2026 | "Use this plan" from a notification opens the app instead of applying in the extension | Lower risk; extension stays display-only |
+| 4 Oct 2026 | Added `ActivityRepository.check(for:)` to read a plan's saved PlanCheck | Plan Detail and Today (3.2, "Checked <time>") show saved checks, but 4.3 had no way to read them |
+| 4 Oct 2026 | Added `ActivityRepository.notifiedReasonKeys(planID:)` | 3.2 alerts once per plan and reason, which needs the reasons already notified; 4.3 could only write them |
 
 ---
 
