@@ -265,6 +265,9 @@ For each plan:
   the preferences for the type's sensitivities. For indoor uncooled places, once
   the day's outdoor temperature exceeds `uncooledHeatLimitC`, the place is too hot
   from that hour to the end of the day. Travel time outside: under 10 min → tip.
+  If no hourly conditions cover the plan (missing from the forecast), add a
+  `.conditions` tip "Weather and air quality for this time aren't available."
+  instead of treating the conditions as fine.
 - Travel: estimate from the previous plan's place (or Home for the first plan);
   compute `leaveBy = start - travel minutes`. Not enough gap → problem.
 - Opening hours: closed during the plan → problem; unknown → tip
@@ -408,10 +411,15 @@ Enums stored as String raw values. Optional numbers use NSNumber.
 - `https://api.open-meteo.com/v1/forecast` hourly: `temperature_2m,
   apparent_temperature, precipitation_probability, uv_index, wind_gusts_10m`
 - `https://air-quality-api.open-meteo.com/v1/air-quality` hourly: `pm2_5`
-- `timezone=Australia/Sydney`; multiple coordinates comma-separated in one request
+- `timezone=Australia/Sydney`, `timeformat=unixtime`; multiple coordinates
+  comma-separated in one request
+- One coordinate returns a JSON object, several return a list. Open-Meteo returns
+  grid-point coordinates, not the requested ones, so results are matched to the
+  requested coordinates by order. Weather and air quality are joined by time; an
+  hour with a missing or null value is left out.
 - Coordinates rounded to 2 decimal places; responses cached for 1 hour;
   the last successful result is saved to the App Group container as JSON.
-- TODO (developer): confirm parameter names against current Open-Meteo docs.
+- Parameter names confirmed against the Open-Meteo docs and live responses (4 Oct 2026).
 
 ### 5.2 TravelTimeService
 `travelEstimate(from: Coordinate, to: Coordinate, mode: TravelMode) -> TravelEstimate`
@@ -662,6 +670,8 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | `ActivityEntity.checkStatusRaw` is optional (nil until the plan is first checked) | A new plan has no check yet; storing "looksGood" before checking would be wrong |
 | 4 Oct 2026 | Added `ActivityEntity.travelModeRaw` (String?) | A saved PlanCheck's TravelEstimate needs its mode; reading it from current preferences would be wrong after Lin changes travel mode |
 | 4 Oct 2026 | `plansNeedingAttention` excludes cancelled plans | A cancelled plan can keep an old "needsAttention" check status and would still appear in the widget |
+| 4 Oct 2026 | Open-Meteo: request `timeformat=unixtime`, accept a list or an object, match results to requested coordinates by order (5.1) | Checked against live responses: they return grid-point coordinates, and unix times avoid parsing local times on daylight-saving days. Parameter names in 5.1 are current |
+| 4 Oct 2026 | A plan with no hourly conditions gets a `.conditions` tip "Weather and air quality for this time aren't available." (3.2) | Hours with missing values are skipped when decoding; a plan without conditions must not look good without saying so |
 
 ---
 
