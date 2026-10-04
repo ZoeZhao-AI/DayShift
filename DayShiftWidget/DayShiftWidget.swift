@@ -11,7 +11,8 @@ import SwiftUI
 import WidgetKit
 
 /// Temporary widget for the shared-store spike (Section 9, Step 2):
-/// shows the latest plan title saved by the app.
+/// shows the title of today's first plan, read through ActivityRepository.
+/// Replaced by NextPlanWidget in Step 4.
 struct Provider: TimelineProvider {
     private static let logger = Logger(
         subsystem: "com.utsstudent.zhaoziying.DayShift",
@@ -23,21 +24,26 @@ struct Provider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        completion(SimpleEntry(date: Date(), planTitle: latestPlanTitle()))
+        Task {
+            completion(SimpleEntry(date: Date(), planTitle: await firstPlanTitleToday()))
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        let entry = SimpleEntry(date: Date(), planTitle: latestPlanTitle())
-        // The app reloads the widget after saving, so no scheduled refresh is needed.
-        completion(Timeline(entries: [entry], policy: .never))
+        Task {
+            let entry = SimpleEntry(date: Date(), planTitle: await firstPlanTitleToday())
+            // The app reloads the widget after saving, so no scheduled refresh is needed.
+            completion(Timeline(entries: [entry], policy: .never))
+        }
     }
 
-    /// Falls back to the empty state if the shared store can't be opened.
-    private func latestPlanTitle() -> String? {
+    /// Falls back to the empty state if the shared store can't be opened or read.
+    private func firstPlanTitleToday() async -> String? {
         do {
-            return try SpikePlanStore().latestPlanTitle()
+            let repository = CoreDataActivityRepository(stack: try CoreDataStack())
+            return try await repository.plans(on: Date()).first?.title
         } catch {
-            Self.logger.error("Couldn't open the shared store: \(String(describing: error), privacy: .public)")
+            Self.logger.error("Couldn't read today's plans: \(String(describing: error), privacy: .public)")
             return nil
         }
     }
@@ -67,13 +73,13 @@ struct DayShiftWidget: Widget {
                 .containerBackground(.fill.tertiary, for: .widget)
         }
         .configurationDisplayName("DayShift")
-        .description("Shows your latest plan.")
+        .description("Shows your first plan today.")
     }
 }
 
 #Preview(as: .systemSmall) {
     DayShiftWidget()
 } timeline: {
-    SimpleEntry(date: .now, planTitle: "Run · Enmore Park")
+    SimpleEntry(date: .now, planTitle: "Client call")
     SimpleEntry(date: .now, planTitle: nil)
 }
