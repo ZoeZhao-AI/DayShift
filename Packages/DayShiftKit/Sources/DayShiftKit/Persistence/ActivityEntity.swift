@@ -27,6 +27,7 @@ final class ActivityEntity: NSManagedObject {
     @NSManaged var checkedAt: Date?
     @NSManaged var leaveBy: Date?
     @NSManaged var travelMinutes: NSNumber?
+    @NSManaged var travelModeRaw: String?
     /// JSON-encoded `[PlanFinding]`.
     @NSManaged var findingsData: Data?
     /// Comma-separated, e.g. "poorAirQuality,heat".

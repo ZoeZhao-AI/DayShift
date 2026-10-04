@@ -18,6 +18,7 @@
         <attribute name="statusRaw" attributeType="String"/>
         <attribute name="title" attributeType="String"/>
         <attribute name="travelMinutes" optional="YES" attributeType="Integer 16" usesScalarValueType="NO"/>
+        <attribute name="travelModeRaw" optional="YES" attributeType="String"/>
         <attribute name="typeID" attributeType="String"/>
         <relationship name="adjustments" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="AdjustmentRecordEntity" inverseName="activity" inverseEntity="AdjustmentRecordEntity"/>
         <relationship name="place" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PlaceEntity" inverseName="activities" inverseEntity="PlaceEntity"/>
