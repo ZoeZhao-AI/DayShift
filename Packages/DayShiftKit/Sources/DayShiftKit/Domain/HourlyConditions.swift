@@ -45,3 +45,41 @@ public struct HourlyConditions: Hashable, Sendable {
 public enum HourlyConditionsError: Error, Equatable {
     case precipitationProbabilityOutOfRange
 }
+
+/// Saved as JSON with the last forecast. Decoding runs the same checks as
+/// `init(time:temperatureC:…)`.
+extension HourlyConditions: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case time
+        case temperatureC
+        case apparentTemperatureC
+        case precipitationProbability
+        case uvIndex
+        case windGustsKmh
+        case pm25
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(
+            time: container.decode(Date.self, forKey: .time),
+            temperatureC: container.decode(Double.self, forKey: .temperatureC),
+            apparentTemperatureC: container.decode(Double.self, forKey: .apparentTemperatureC),
+            precipitationProbability: container.decode(Int.self, forKey: .precipitationProbability),
+            uvIndex: container.decode(Double.self, forKey: .uvIndex),
+            windGustsKmh: container.decode(Double.self, forKey: .windGustsKmh),
+            pm25: container.decode(Double.self, forKey: .pm25)
+        )
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(time, forKey: .time)
+        try container.encode(temperatureC, forKey: .temperatureC)
+        try container.encode(apparentTemperatureC, forKey: .apparentTemperatureC)
+        try container.encode(precipitationProbability, forKey: .precipitationProbability)
+        try container.encode(uvIndex, forKey: .uvIndex)
+        try container.encode(windGustsKmh, forKey: .windGustsKmh)
+        try container.encode(pm25, forKey: .pm25)
+    }
+}
