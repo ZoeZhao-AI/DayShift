@@ -9,14 +9,17 @@ import DayShiftKit
 import SwiftUI
 import WidgetKit
 
-/// Temporary screen for the shared-store spike (Section 9, Step 2).
+/// Temporary screen for the shared-store spike (Section 9, Step 2),
+/// now saving through ActivityRepository. Replaced by Today in Step 3.
 struct ContentView: View {
     @State private var resultMessage: String?
 
     var body: some View {
         VStack(spacing: 16) {
-            Button("Save test plan", action: saveTestPlan)
-                .buttonStyle(.borderedProminent)
+            Button("Save test plan") {
+                Task { await saveTestPlan() }
+            }
+            .buttonStyle(.borderedProminent)
 
             if let resultMessage {
                 Text(resultMessage)
@@ -26,12 +29,23 @@ struct ContentView: View {
         .padding()
     }
 
-    private func saveTestPlan() {
+    /// Saves a 30-minute online Client call starting now, then reloads the widget.
+    @MainActor
+    private func saveTestPlan() async {
         do {
-            let store = try SpikePlanStore()
-            try store.saveSamplePlan(title: "Run · Enmore Park")
+            let repository = CoreDataActivityRepository(stack: try CoreDataStack())
+            let clientCall = try PlannedActivity(
+                typeID: ActivityCatalogue.clientMeeting.id,
+                title: "Client call",
+                start: Date(),
+                durationMinutes: 30,
+                place: nil,
+                mode: .online,
+                flexibility: .fixed
+            )
+            try await repository.save(clientCall)
             WidgetCenter.shared.reloadAllTimelines()
-            resultMessage = "Saved \"Run · Enmore Park\". Check the widget."
+            resultMessage = "Saved \"Client call\". Check the widget."
         } catch {
             let localized = error as? LocalizedError
             resultMessage = [
