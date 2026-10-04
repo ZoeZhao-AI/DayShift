@@ -119,9 +119,21 @@ struct TodayView: View {
             }
             .sheet(item: $planEditor) { editor in
                 PlanEditorView(viewModel: editor) {
-                    Task { await viewModel.refresh() }
+                    Task { await viewModel.planWasSaved(editor.savedPlan) }
                 }
             }
+            .overlay(alignment: .bottom) {
+                if let confirmation = viewModel.savedConfirmation {
+                    Toast(text: confirmation)
+                        .padding()
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .task(id: confirmation) {
+                            try? await Task.sleep(for: .seconds(4))
+                            withAnimation { viewModel.dismissSavedConfirmation() }
+                        }
+                }
+            }
+            .animation(.default, value: viewModel.savedConfirmation)
         }
         .tint(.teal)
         .onChange(of: scenePhase, initial: true) { _, phase in
@@ -129,6 +141,22 @@ struct TodayView: View {
                 Task { await viewModel.refresh() }
             }
         }
+    }
+}
+
+/// A short confirmation at the bottom of Today, read out by VoiceOver.
+private struct Toast: View {
+    let text: String
+
+    var body: some View {
+        Label(text, systemImage: "checkmark.circle.fill")
+            .font(.subheadline)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .onAppear {
+                AccessibilityNotification.Announcement(text).post()
+            }
     }
 }
 

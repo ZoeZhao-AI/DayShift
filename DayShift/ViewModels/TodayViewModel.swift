@@ -30,6 +30,9 @@ final class TodayViewModel {
     private(set) var alertsAreOff = false
     private(set) var showsAddSamplePlaces = false
     private(set) var hasLoaded = false
+    /// A short confirmation after saving a plan for another day, which Today
+    /// doesn't list, e.g. "Saved for Monday 5 Oct. You'll see it on Today that day."
+    private(set) var savedConfirmation: String?
     private var plansByID: [UUID: PlannedActivity] = [:]
 
     private let checkUpcomingPlans: CheckUpcomingPlansUseCase
@@ -117,6 +120,25 @@ final class TodayViewModel {
             problemBanner = ErrorMessage(error)
             footer = nil
         }
+    }
+
+    /// After the Plan Editor saves: refreshes Today, and confirms a plan saved
+    /// for another day, since it won't appear in the list.
+    func planWasSaved(_ plan: PlannedActivity?, now: Date = Date()) async {
+        await refresh(now: now)
+        guard let plan, !calendar.isDate(plan.start, inSameDayAs: now) else {
+            savedConfirmation = nil
+            return
+        }
+        let day = plan.start.formatted(
+            Date.FormatStyle(locale: Locale(identifier: "en_AU"), calendar: calendar, timeZone: calendar.timeZone)
+                .weekday(.wide).day().month(.abbreviated)
+        )
+        savedConfirmation = "Saved for \(day). You'll see it on Today that day."
+    }
+
+    func dismissSavedConfirmation() {
+        savedConfirmation = nil
     }
 
     /// The plan behind a row, to open Plan Detail.
