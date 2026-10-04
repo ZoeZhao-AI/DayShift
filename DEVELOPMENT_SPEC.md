@@ -372,7 +372,8 @@ Enums stored as String raw values. Optional numbers use NSNumber.
   `statusRaw IN {"planned","adjusted"}` → "today's plans that haven't started"
 - `plans(overlapping interval:, excluding ids:)` — `start < %@ AND end > %@ AND
   NOT (id IN %@) AND statusRaw != "cancelled"`
-- `plansNeedingAttention(on day:)` — same day AND `checkStatusRaw == "needsAttention"`
+- `plansNeedingAttention(on day:)` — same day AND `checkStatusRaw == "needsAttention"` AND
+  `statusRaw != "cancelled"`
 
 ### 4.3 Repository Protocols (async throws, domain types only)
 - `ActivityRepository`: `plans(on:)`, `checkablePlans(on:now:)`,
@@ -660,6 +661,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | Added `ActivityRepository.notifiedReasonKeys(planID:)` | 3.2 alerts once per plan and reason, which needs the reasons already notified; 4.3 could only write them |
 | 4 Oct 2026 | `ActivityEntity.checkStatusRaw` is optional (nil until the plan is first checked) | A new plan has no check yet; storing "looksGood" before checking would be wrong |
 | 4 Oct 2026 | Added `ActivityEntity.travelModeRaw` (String?) | A saved PlanCheck's TravelEstimate needs its mode; reading it from current preferences would be wrong after Lin changes travel mode |
+| 4 Oct 2026 | `plansNeedingAttention` excludes cancelled plans | A cancelled plan can keep an old "needsAttention" check status and would still appear in the widget |
 
 ---
 

@@ -36,11 +36,13 @@ enum ActivityQuery {
         )
     }
 
-    /// Plans on that day whose last check needs attention.
+    /// Plans on that day whose last check needs attention. A cancelled plan
+    /// can keep an old check status, so it is left out.
     static func plansNeedingAttention(on day: Date, calendar: Calendar = .current) -> NSPredicate {
         NSCompoundPredicate(andPredicateWithSubpredicates: [
             startsOnDay(of: day, calendar: calendar),
-            NSPredicate(format: "checkStatusRaw == %@", PlanCheck.Status.needsAttention.rawValue)
+            NSPredicate(format: "checkStatusRaw == %@", PlanCheck.Status.needsAttention.rawValue),
+            NSPredicate(format: "statusRaw != %@", PlanStatus.cancelled.rawValue)
         ])
     }
 
