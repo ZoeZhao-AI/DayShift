@@ -7,10 +7,12 @@ import Testing
 private final class StoredPlan: NSObject {
     @objc let start: Date
     @objc let statusRaw: String
+    @objc let checkStatusRaw: String?
 
-    init(start: Date, status: PlanStatus) {
+    init(start: Date, status: PlanStatus, checkStatus: PlanCheck.Status? = nil) {
         self.start = start
         self.statusRaw = status.rawValue
+        self.checkStatusRaw = checkStatus?.rawValue
     }
 }
 
@@ -40,5 +42,16 @@ struct ActivityQueryTests {
         #expect(predicate.evaluate(with: movedGroceryRun))
         #expect(!predicate.evaluate(with: startedWalk))
         #expect(!predicate.evaluate(with: cancelledCoffee))
+    }
+
+    @Test("A cancelled plan never needs attention")
+    func cancelledPlanNeverNeedsAttention() {
+        let predicate = ActivityQuery.plansNeedingAttention(on: thursday(6, 40), calendar: sydney)
+
+        let smokyRun = StoredPlan(start: thursday(7), status: .planned, checkStatus: .needsAttention)
+        let cancelledSmokyRun = StoredPlan(start: thursday(7), status: .cancelled, checkStatus: .needsAttention)
+
+        #expect(predicate.evaluate(with: smokyRun))
+        #expect(!predicate.evaluate(with: cancelledSmokyRun))
     }
 }
