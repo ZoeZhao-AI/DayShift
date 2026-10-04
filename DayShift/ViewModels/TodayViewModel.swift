@@ -84,16 +84,21 @@ final class TodayViewModel {
     }
 
     /// Temporary until My Places (Step 10): saves Lin's four places that
-    /// aren't saved yet, then refreshes.
+    /// aren't saved yet, then refreshes. A saving error is shown after the
+    /// refresh, so the refresh can't clear it.
     func addSamplePlaces() async {
+        var saveError: Error?
         do {
             for place in try SamplePlaces.all() where try await places.place(named: place.name) == nil {
                 try await places.save(place)
             }
         } catch {
-            problemBanner = ErrorMessage(error)
+            saveError = error
         }
         await refresh()
+        if let saveError {
+            problemBanner = ErrorMessage(saveError)
+        }
     }
 
     private func showPlans(now: Date, checkError: Error?) async {
