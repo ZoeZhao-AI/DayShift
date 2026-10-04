@@ -351,8 +351,9 @@ Enums stored as String raw values. Optional numbers use NSNumber.
 - id UUID, typeID, title, modeRaw, statusRaw
 - start Date, end Date (stored for overlap queries), durationMinutes Int16
 - movableWindowStart Date?, movableWindowEnd Date?, allowsPlaceChange Bool
-- checkStatusRaw ("looksGood" / "needsAttention"), checkSummary String?,
-  checkedAt Date?, leaveBy Date?, travelMinutes NSNumber?,
+- checkStatusRaw String? ("looksGood" / "needsAttention"; nil until first checked),
+  checkSummary String?, checkedAt Date?, leaveBy Date?, travelMinutes NSNumber?,
+  travelModeRaw String?,
   findingsData Binary? (JSON-encoded [PlanFinding])
 - notifiedReasonKeys String? (e.g. "poorAirQuality,heat")
 - `place` → PlaceEntity, to-one, delete rule Nullify
@@ -657,6 +658,8 @@ Record every change to this spec during development (commit as `docs:`).
 | 3 Oct 2026 | "Use this plan" from a notification opens the app instead of applying in the extension | Lower risk; extension stays display-only |
 | 4 Oct 2026 | Added `ActivityRepository.check(for:)` to read a plan's saved PlanCheck | Plan Detail and Today (3.2, "Checked <time>") show saved checks, but 4.3 had no way to read them |
 | 4 Oct 2026 | Added `ActivityRepository.notifiedReasonKeys(planID:)` | 3.2 alerts once per plan and reason, which needs the reasons already notified; 4.3 could only write them |
+| 4 Oct 2026 | `ActivityEntity.checkStatusRaw` is optional (nil until the plan is first checked) | A new plan has no check yet; storing "looksGood" before checking would be wrong |
+| 4 Oct 2026 | Added `ActivityEntity.travelModeRaw` (String?) | A saved PlanCheck's TravelEstimate needs its mode; reading it from current preferences would be wrong after Lin changes travel mode |
 
 ---
 
