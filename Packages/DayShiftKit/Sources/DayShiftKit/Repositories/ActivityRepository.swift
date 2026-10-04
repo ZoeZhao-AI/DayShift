@@ -18,8 +18,14 @@ public protocol ActivityRepository {
 
     func saveCheck(_ check: PlanCheck) async throws
 
+    /// The last saved check for the plan, or nil if it hasn't been checked yet.
+    func check(for planID: UUID) async throws -> PlanCheck?
+
     /// Records that Lin was alerted about these reasons for this plan.
     func markNotified(planID: UUID, reasonKeys: Set<String>) async throws
+
+    /// Reasons Lin has already been alerted about for this plan; empty if none.
+    func notifiedReasonKeys(planID: UUID) async throws -> Set<String>
 
     /// Saves every changed plan and its record together; if any part fails,
     /// nothing changes.
