@@ -30,6 +30,7 @@ final class TodayViewModel {
     private(set) var alertsAreOff = false
     private(set) var showsAddSamplePlaces = false
     private(set) var hasLoaded = false
+    private var plansByID: [UUID: PlannedActivity] = [:]
 
     private let checkUpcomingPlans: CheckUpcomingPlansUseCase
     private let activities: ActivityRepository
@@ -94,7 +95,8 @@ final class TodayViewModel {
         do {
             var rows: [PlanRow] = []
             var lastCheckedAt: Date?
-            for plan in try await activities.plans(on: now) {
+            let plans = try await activities.plans(on: now)
+            for plan in plans {
                 let check = try await activities.check(for: plan.id)
                 if let checkedAt = check?.checkedAt, checkedAt > (lastCheckedAt ?? .distantPast) {
                     lastCheckedAt = checkedAt
@@ -102,6 +104,7 @@ final class TodayViewModel {
                 rows.append(row(for: plan, check: check, now: now))
             }
             self.rows = rows
+            plansByID = Dictionary(uniqueKeysWithValues: plans.map { ($0.id, $0) })
 
             if let checkError {
                 problemBanner = ErrorMessage(checkError)
@@ -114,6 +117,11 @@ final class TodayViewModel {
             problemBanner = ErrorMessage(error)
             footer = nil
         }
+    }
+
+    /// The plan behind a row, to open Plan Detail.
+    func plan(withID id: UUID) -> PlannedActivity? {
+        plansByID[id]
     }
 
     private func row(for plan: PlannedActivity, check: PlanCheck?, now: Date) -> PlanRow {

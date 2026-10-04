@@ -1,3 +1,4 @@
+import DayShiftKit
 import SwiftUI
 import UIKit
 
@@ -7,17 +8,24 @@ import UIKit
 struct TodayView: View {
     @State private var viewModel: TodayViewModel
     @State private var planEditor: PlanEditorViewModel?
+    @State private var path: [PlanDetailViewModel] = []
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
-    private let makePlanEditor: () -> PlanEditorViewModel
+    private let makePlanEditor: (PlannedActivity?) -> PlanEditorViewModel
+    private let makePlanDetail: (PlannedActivity) -> PlanDetailViewModel
 
-    init(viewModel: TodayViewModel, makePlanEditor: @escaping () -> PlanEditorViewModel) {
+    init(
+        viewModel: TodayViewModel,
+        makePlanEditor: @escaping (PlannedActivity?) -> PlanEditorViewModel,
+        makePlanDetail: @escaping (PlannedActivity) -> PlanDetailViewModel
+    ) {
         _viewModel = State(initialValue: viewModel)
         self.makePlanEditor = makePlanEditor
+        self.makePlanDetail = makePlanDetail
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 Section {
                     Text(viewModel.weekday)
@@ -57,12 +65,19 @@ struct TodayView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 8)
-                        Button("Plan an activity") { planEditor = makePlanEditor() }
+                        Button("Plan an activity") { planEditor = makePlanEditor(nil) }
                     }
                 } else if !viewModel.rows.isEmpty {
                     Section("Your plans") {
                         ForEach(viewModel.rows) { row in
-                            PlanRowView(row: row)
+                            Button {
+                                if let plan = viewModel.plan(withID: row.id) {
+                                    path.append(makePlanDetail(plan))
+                                }
+                            } label: {
+                                PlanRowView(row: row)
+                            }
+                            .foregroundStyle(Color.primary)
                         }
                     }
                 }
@@ -89,7 +104,7 @@ struct TodayView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        planEditor = makePlanEditor()
+                        planEditor = makePlanEditor(nil)
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -97,6 +112,11 @@ struct TodayView: View {
                 }
             }
             .refreshable { await viewModel.refresh() }
+            .navigationDestination(for: PlanDetailViewModel.self) { detail in
+                PlanDetailView(viewModel: detail, makePlanEditor: makePlanEditor) {
+                    Task { await viewModel.refresh() }
+                }
+            }
             .sheet(item: $planEditor) { editor in
                 PlanEditorView(viewModel: editor) {
                     Task { await viewModel.refresh() }
@@ -157,6 +177,10 @@ private struct PlanRowView: View {
 
 #Preview {
     if let dependencies = try? AppDependencies() {
-        TodayView(viewModel: dependencies.today, makePlanEditor: { dependencies.makePlanEditor() })
+        TodayView(
+            viewModel: dependencies.today,
+            makePlanEditor: { dependencies.makePlanEditor(editing: $0) },
+            makePlanDetail: { dependencies.makePlanDetail(for: $0) }
+        )
     }
 }

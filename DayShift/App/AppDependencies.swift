@@ -11,6 +11,9 @@ final class AppDependencies {
     let checkUpcomingPlans: CheckUpcomingPlansUseCase
     let planActivity: PlanActivityUseCase
     let today: TodayViewModel
+    private let conditions: ConditionsService
+    private let widget: WidgetRefreshing
+    private let notifications: NotificationScheduling
     private let calendar: Calendar
 
     /// - Throws: `CoreDataStackError` if the shared store can't be opened.
@@ -23,12 +26,13 @@ final class AppDependencies {
         let travelTimes = StraightLineTravelTimeService()
         let widget = WidgetCenterRefresher()
         let notifications = PlaceholderNotificationScheduler()
+        let conditions = OpenMeteoConditionsService()
 
         let checkUpcomingPlans = CheckUpcomingPlansUseCase(
             activities: activities,
             places: places,
             preferences: preferences,
-            conditions: OpenMeteoConditionsService(),
+            conditions: conditions,
             travelTimes: travelTimes,
             widget: widget,
             notifications: notifications,
@@ -50,6 +54,9 @@ final class AppDependencies {
         self.preferences = preferences
         self.checkUpcomingPlans = checkUpcomingPlans
         self.planActivity = planActivity
+        self.conditions = conditions
+        self.widget = widget
+        self.notifications = notifications
         self.calendar = calendar
         today = TodayViewModel(
             checkUpcomingPlans: checkUpcomingPlans,
@@ -63,5 +70,17 @@ final class AppDependencies {
     /// A Plan Editor for a new plan, or for `plan` when editing.
     func makePlanEditor(editing plan: PlannedActivity? = nil) -> PlanEditorViewModel {
         PlanEditorViewModel(editing: plan, planActivity: planActivity, places: places, calendar: calendar)
+    }
+
+    func makePlanDetail(for plan: PlannedActivity) -> PlanDetailViewModel {
+        PlanDetailViewModel(
+            plan: plan,
+            activities: activities,
+            preferences: preferences,
+            conditions: conditions,
+            widget: widget,
+            notifications: notifications,
+            calendar: calendar
+        )
     }
 }

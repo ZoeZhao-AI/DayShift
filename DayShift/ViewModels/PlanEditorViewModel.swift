@@ -31,6 +31,8 @@ final class PlanEditorViewModel {
     private(set) var savedPlaces: [Place] = []
     private(set) var inlineError: ErrorMessage?
     private(set) var isSaving = false
+    /// The plan as saved, after `save()` succeeds.
+    private(set) var savedPlan: PlannedActivity?
 
     private let existing: PlannedActivity?
     private let planActivity: PlanActivityUseCase
@@ -123,7 +125,9 @@ final class PlanEditorViewModel {
         isSaving = true
         defer { isSaving = false }
         do {
-            try await planActivity.execute(try makePlan(), now: now)
+            let plan = try makePlan()
+            try await planActivity.execute(plan, now: now)
+            savedPlan = plan
             return true
         } catch {
             inlineError = message(for: error)
