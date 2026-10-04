@@ -23,8 +23,14 @@ public final class SpikePlanStore {
         try context.performAndWait {
             let plan = ActivityEntity(context: context)
             plan.id = UUID()
+            plan.typeID = ActivityCatalogue.run.id
             plan.title = title
+            plan.modeRaw = ActivityMode.inPerson.rawValue
+            plan.statusRaw = PlanStatus.planned.rawValue
             plan.start = Date()
+            plan.durationMinutes = 45
+            plan.end = plan.start.addingTimeInterval(45 * 60)
+            plan.allowsPlaceChange = false
             try context.save()
         }
     }
