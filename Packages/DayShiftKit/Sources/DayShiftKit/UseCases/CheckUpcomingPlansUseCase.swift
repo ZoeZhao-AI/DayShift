@@ -130,11 +130,13 @@ public struct CheckUpcomingPlansUseCase: PlanChecking {
         return check
     }
 
-    /// One alert per plan for problems Lin hasn't been alerted about yet, and
-    /// only for plans starting more than 15 minutes from now.
+    /// One alert per plan for problems Lin hasn't been alerted about yet, only
+    /// for plans today starting more than 15 minutes from now. A plan on a
+    /// later day is alerted on its day, so its reasons aren't marked early.
     private func alertNewProblems(of plan: PlannedActivity, assessment: Assessment, now: Date) async {
         let problems = assessment.findings.filter { $0.finding.severity == .problem && $0.reasonKey != nil }
         guard !problems.isEmpty,
+              calendar.isDate(plan.start, inSameDayAs: now),
               plan.start.timeIntervalSince(now) > TimeInterval(Self.alertLeadMinutes * 60),
               let notified = try? await activities.notifiedReasonKeys(planID: plan.id)
         else { return }
