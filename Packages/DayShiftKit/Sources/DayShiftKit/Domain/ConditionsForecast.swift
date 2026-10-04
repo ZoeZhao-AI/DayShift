@@ -23,3 +23,32 @@ public struct ConditionsForecast: Hashable, Sendable {
         }
     }
 }
+
+/// Saved as JSON with the last forecast. Decoding goes through
+/// `init(latitude:longitude:fetchedAt:hours:)`, so hours are checked and sorted.
+extension ConditionsForecast: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case latitude
+        case longitude
+        case fetchedAt
+        case hours
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            latitude: try container.decode(Double.self, forKey: .latitude),
+            longitude: try container.decode(Double.self, forKey: .longitude),
+            fetchedAt: try container.decode(Date.self, forKey: .fetchedAt),
+            hours: try container.decode([HourlyConditions].self, forKey: .hours)
+        )
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(latitude, forKey: .latitude)
+        try container.encode(longitude, forKey: .longitude)
+        try container.encode(fetchedAt, forKey: .fetchedAt)
+        try container.encode(hours, forKey: .hours)
+    }
+}
