@@ -8,7 +8,10 @@ let package = Package(
         .library(name: "DayShiftKit", targets: ["DayShiftKit"])
     ],
     targets: [
-        .target(name: "DayShiftKit"),
+        .target(
+            name: "DayShiftKit",
+            resources: [.process("Persistence/DayShift.xcdatamodeld")]
+        ),
         .testTarget(name: "DayShiftKitTests", dependencies: ["DayShiftKit"])
     ]
 )
