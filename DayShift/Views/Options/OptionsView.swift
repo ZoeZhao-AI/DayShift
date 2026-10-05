@@ -47,6 +47,15 @@ struct OptionsView: View {
                     }
                     .padding(.vertical, 4)
                 }
+                if !viewModel.noResultReasons.isEmpty {
+                    Section("Why nothing fits") {
+                        ForEach(viewModel.noResultReasons, id: \.self) { reason in
+                            Label(reason, systemImage: "exclamationmark.triangle.fill")
+                                .font(.subheadline)
+                                .symbolRenderingMode(.multicolor)
+                        }
+                    }
+                }
             }
 
             if let heading = viewModel.optionsHeading {

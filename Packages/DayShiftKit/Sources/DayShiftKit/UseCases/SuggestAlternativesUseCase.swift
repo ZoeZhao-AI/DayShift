@@ -135,6 +135,144 @@ public struct SuggestAlternativesUseCase {
         return AlternativeSuggestions(currentScore: currentScore, options: Array(best))
     }
 
+    // MARK: - Why there are no options
+
+    /// When `execute` finds no options: what stops the plan, in Lin's words,
+    /// over the times it could move to, e.g. "Wind gusts 56–70 km/h all day,
+    /// above your limit of 40 km/h." and "None of your other places suit
+    /// Outdoor sketching." The condition that rules out the most hours comes
+    /// first, so "all day" reasons lead; the place reason comes last.
+    /// Empty if nothing specific can be named.
+    public func reasonsWithoutOptions(for plan: PlannedActivity, now: Date) async throws -> [String] {
+        let preferences = try await self.preferences.load()
+        let activityType = ActivityCatalogue.type(withID: plan.typeID)
+        var reasons: [LimitReason] = []
+
+        if let place = plan.place {
+            let window = plan.flexibility.movableWindow ?? plan.interval
+            let forecast = try? await conditions.forecast(for: [place.coordinate], on: plan.start)[place.coordinate]
+            let hours = forecast?.conditions(during: window).filter { $0.time.addingTimeInterval(3600) > now } ?? []
+            if !hours.isEmpty {
+                if place.isIndoor {
+                    if !place.isCooled, let limit = place.uncooledHeatLimitC,
+                       let reason = limitReason(
+                        label: { "It reaches \($0)°C outside" }, values: hours.map(\.temperatureC),
+                        times: hours.map(\.time), limit: limit, limitText: "too hot above \(Self.whole(limit))°C",
+                        window: window, preferences: preferences
+                       ) {
+                        reasons.append(reason)
+                    }
+                } else {
+                    let sensitivities = activityType?.sensitivities ?? Set(ConditionSensitivity.allCases)
+                    for sensitivity in ConditionSensitivity.allCases where sensitivities.contains(sensitivity) {
+                        if let reason = outdoorReason(sensitivity, hours: hours, window: window, preferences: preferences) {
+                            reasons.append(reason)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Most hours ruled out first; equal ones keep the order of 3.2's conditions.
+        var sentences = reasons.enumerated()
+            .sorted { lhs, rhs in
+                lhs.element.hoursAboveLimit != rhs.element.hoursAboveLimit
+                    ? lhs.element.hoursAboveLimit > rhs.element.hoursAboveLimit
+                    : lhs.offset < rhs.offset
+            }
+            .map(\.element.text)
+
+        if plan.flexibility.allowsPlaceChange, let currentPlace = plan.place {
+            let others = try await places.allPlaces().filter { place in
+                place.id != currentPlace.id && (activityType?.suitablePlaceKinds.contains(place.kind) ?? true)
+            }
+            if others.isEmpty {
+                sentences.append("None of your other places suit \(activityType?.name ?? plan.title).")
+            }
+        }
+        return sentences
+    }
+
+    /// A condition above Lin's limit, and how many of the hours it rules out.
+    private struct LimitReason {
+        let text: String
+        let hoursAboveLimit: Int
+    }
+
+    private func outdoorReason(
+        _ sensitivity: ConditionSensitivity,
+        hours: [HourlyConditions],
+        window: DateInterval,
+        preferences: ComfortPreferences
+    ) -> LimitReason? {
+        let times = hours.map(\.time)
+        switch sensitivity {
+        case .heat:
+            let limit = preferences.maxApparentTemperatureC
+            return limitReason(label: { "Feels like \($0)°C" }, values: hours.map(\.apparentTemperatureC), times: times,
+                               limit: limit, limitText: "above your limit of \(Self.whole(limit))°C",
+                               window: window, preferences: preferences)
+        case .poorAirQuality:
+            let worstAcceptable = preferences.worstAcceptableAirQuality
+            guard let limit = worstAcceptable.pm25UpperBound else { return nil }
+            let worst = hours.map(\.airQuality).max() ?? .good
+            return limitReason(label: { _ in "Air quality \(worst.name)" }, values: hours.map(\.pm25), times: times,
+                               limit: limit, limitText: "above your limit (\(worstAcceptable.name))",
+                               window: window, preferences: preferences)
+        case .uv:
+            let limit = preferences.maxUVIndex
+            return limitReason(label: { "UV \($0)" }, values: hours.map(\.uvIndex), times: times,
+                               limit: limit, limitText: "above your limit of \(Self.whole(limit))",
+                               window: window, preferences: preferences)
+        case .wind:
+            let limit = preferences.maxWindGustsKmh
+            return limitReason(label: { "Wind gusts \($0) km/h" }, values: hours.map(\.windGustsKmh), times: times,
+                               limit: limit, limitText: "above your limit of \(Self.whole(limit)) km/h",
+                               window: window, preferences: preferences)
+        case .rain:
+            let limit = Double(preferences.maxRainProbability)
+            return limitReason(label: { "\($0)% chance of rain" }, values: hours.map { Double($0.precipitationProbability) }, times: times,
+                               limit: limit, limitText: "above your limit of \(preferences.maxRainProbability)%",
+                               window: window, preferences: preferences)
+        }
+    }
+
+    /// e.g. "Wind gusts 56–70 km/h all day, above your limit of 40 km/h." when
+    /// every hour is above the limit, or "UV 9 from 11 am to 3 pm, …" when only some are.
+    private func limitReason(
+        label: (String) -> String,
+        values: [Double],
+        times: [Date],
+        limit: Double,
+        limitText: String,
+        window: DateInterval,
+        preferences: ComfortPreferences
+    ) -> LimitReason? {
+        let bad = zip(times, values).filter { $0.1 > limit }
+        guard let first = bad.first, let last = bad.last,
+              let low = bad.map(\.1).min(), let high = bad.map(\.1).max()
+        else { return nil }
+        let range = Self.whole(low) == Self.whole(high) ? Self.whole(high) : "\(Self.whole(low))–\(Self.whole(high))"
+
+        let when: String
+        if bad.count == values.count {
+            let wholeDay = fit.isWithinPlanningHours(window, preferences: preferences)
+                && window.duration >= TimeInterval((preferences.latestPlanTime - preferences.earliestPlanTime) * 60)
+            when = wholeDay
+                ? "all day"
+                : "from \(TimeText.shortTime(window.start, calendar: calendar)) to \(TimeText.shortTime(window.end, calendar: calendar))"
+        } else {
+            let end = last.0.addingTimeInterval(3600)
+            when = "from \(TimeText.shortTime(first.0, calendar: calendar)) to \(TimeText.shortTime(end, calendar: calendar))"
+        }
+        return LimitReason(text: "\(label(range)) \(when), \(limitText).", hoursAboveLimit: bad.count)
+    }
+
+    /// 55.6 → "56".
+    private static func whole(_ value: Double) -> String {
+        String(Int(value.rounded()))
+    }
+
     // MARK: - Candidates
 
     /// Every 30 minutes inside the movable window and planning hours, not in

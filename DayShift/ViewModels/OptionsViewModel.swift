@@ -25,6 +25,8 @@ final class OptionsViewModel {
     private(set) var options: [OptionCard] = []
     /// No options at all, in Lin's words (e.g. noViableAlternative).
     private(set) var noResult: ErrorMessage?
+    /// Why nothing fits, e.g. "Wind gusts 56–70 km/h all day, above your limit of 40 km/h."
+    private(set) var noResultReasons: [String] = []
     /// A failed "Use this plan", shown above the options.
     private(set) var acceptError: ErrorMessage?
     private(set) var isLoading = false
@@ -91,9 +93,13 @@ final class OptionsViewModel {
                 )
             }
             noResult = nil
+            noResultReasons = []
         } catch {
             options = []
             noResult = message(for: error, now: now)
+            noResultReasons = error as? SuggestAlternativesError == .noViableAlternative
+                ? (try? await suggestAlternatives.reasonsWithoutOptions(for: plan, now: now)) ?? []
+                : []
         }
     }
 
