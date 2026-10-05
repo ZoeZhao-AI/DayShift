@@ -130,7 +130,7 @@ final class TodayViewModel {
                 laterPlans += dayPlans
                 groups.append(DayGroup(
                     id: day,
-                    title: offset == 1 ? "Tomorrow" : dayText(day),
+                    title: offset == 1 ? "Tomorrow" : TimeText.day(day, calendar: calendar),
                     rows: dayPlans.map { row(for: $0, check: nil, now: now) }
                 ))
             }
@@ -158,7 +158,7 @@ final class TodayViewModel {
             toast = nil
             return
         }
-        toast = "Saved for \(dayText(plan.start))."
+        toast = "Saved for \(TimeText.day(plan.start, calendar: calendar))."
     }
 
     /// After an option is used: refreshes Today and confirms the change.
@@ -169,14 +169,6 @@ final class TodayViewModel {
 
     func dismissToast() {
         toast = nil
-    }
-
-    /// e.g. "Monday 5 Oct".
-    private func dayText(_ date: Date) -> String {
-        date.formatted(
-            Date.FormatStyle(locale: Locale(identifier: "en_AU"), calendar: calendar, timeZone: calendar.timeZone)
-                .weekday(.wide).day().month(.abbreviated)
-        )
     }
 
     /// The plan behind a row, to open Plan Detail.

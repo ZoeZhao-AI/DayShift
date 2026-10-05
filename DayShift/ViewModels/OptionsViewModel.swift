@@ -122,11 +122,7 @@ final class OptionsViewModel {
         if let tomorrow, calendar.isDate(date, inSameDayAs: tomorrow) {
             return "tomorrow"
         }
-        let day = date.formatted(
-            Date.FormatStyle(locale: Locale(identifier: "en_AU"), calendar: calendar, timeZone: calendar.timeZone)
-                .weekday(.wide).day().month(.abbreviated)
-        )
-        return "on \(day)"
+        return "on \(TimeText.day(date, calendar: calendar))"
     }
 
     /// Uses the option. Returns the toast for Today, e.g. "Your run is now at
