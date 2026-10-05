@@ -64,6 +64,10 @@ public struct SuggestAlternativesUseCase {
         PlanAssessor(travelTimes: travelTimes, calendar: calendar)
     }
 
+    private var fit: ScheduleFit {
+        ScheduleFit(travelTimes: travelTimes, calendar: calendar)
+    }
+
     public func execute(for plan: PlannedActivity, now: Date) async throws -> AlternativeSuggestions {
         guard plan.flexibility.allowsAnyChange else {
             throw SuggestAlternativesError.planHasNoFlexibility
@@ -154,7 +158,7 @@ public struct SuggestAlternativesUseCase {
         let duration = TimeInterval(durationMinutes * 60)
         while start.addingTimeInterval(duration) <= window.end {
             let interval = DateInterval(start: start, duration: duration)
-            if start >= now, isWithinPlanningHours(interval, preferences: preferences) {
+            if start >= now, fit.isWithinPlanningHours(interval, preferences: preferences) {
                 starts.append(start)
             }
             start = start.addingTimeInterval(TimeInterval(Self.stepMinutes * 60))
@@ -196,7 +200,7 @@ public struct SuggestAlternativesUseCase {
         now: Date
     ) throws -> AlternativePlan? {
         let others = context.dayPlans.filter { $0.id != original.id }
-        let blocking = blockingPlans(for: candidate, among: others, context: context)
+        let blocking = fit.blockingPlans(for: candidate, among: others, home: context.home, preferences: context.preferences)
 
         var knockOn: PlannedActivity?
         if !blocking.isEmpty {
@@ -233,24 +237,6 @@ public struct SuggestAlternativesUseCase {
         )
     }
 
-    /// The other plans that stop the candidate fitting: overlaps, or not
-    /// enough time to get there or to the next plan.
-    private func blockingPlans(for candidate: PlannedActivity, among others: [PlannedActivity], context: PlanAssessor.Context) -> [PlannedActivity] {
-        let conflicts = DaySchedule(date: candidate.start, plans: others).conflicts(
-            for: candidate.interval,
-            travelBefore: travelMinutes(before: candidate, among: others, home: context.home, preferences: context.preferences),
-            travelAfter: travelMinutes(after: candidate, among: others, home: context.home, preferences: context.preferences),
-            excluding: [candidate.id],
-            buffer: context.preferences.minimumBufferMinutes
-        )
-        let ids = Set(conflicts.map { conflict -> UUID in
-            switch conflict {
-            case let .overlaps(planID), let .notEnoughGap(planID, _, _): return planID
-            }
-        })
-        return others.filter { ids.contains($0.id) }
-    }
-
     /// Moves one blocking plan inside its own window, closest to its own time,
     /// so both plans fit and both pass the check. Fixed or started plans never move.
     private func knockOnMove(
@@ -272,8 +258,8 @@ public struct SuggestAlternativesUseCase {
                 start: start, durationMinutes: blocker.durationMinutes,
                 place: blocker.place, mode: blocker.mode, flexibility: blocker.flexibility, status: blocker.status
             )
-            guard blockingPlans(for: candidate, among: rest + [moved], context: context).isEmpty,
-                  blockingPlans(for: moved, among: rest + [candidate], context: context).isEmpty
+            guard fit.blockingPlans(for: candidate, among: rest + [moved], home: context.home, preferences: context.preferences).isEmpty,
+                  fit.blockingPlans(for: moved, among: rest + [candidate], home: context.home, preferences: context.preferences).isEmpty
             else { continue }
 
             var movedContext = context
@@ -284,28 +270,6 @@ public struct SuggestAlternativesUseCase {
             }
         }
         return nil
-    }
-
-    private func travelMinutes(before plan: PlannedActivity, among others: [PlannedActivity], home: Place?, preferences: ComfortPreferences) -> Int {
-        let previous = others.filter { $0.end <= plan.start }.max { $0.end < $1.end }
-        return travelMinutes(from: previous?.place ?? home, to: plan.place, preferences: preferences)
-    }
-
-    private func travelMinutes(after plan: PlannedActivity, among others: [PlannedActivity], home: Place?, preferences: ComfortPreferences) -> Int {
-        let next = others.filter { $0.start >= plan.end }.min { $0.start < $1.start }
-        return travelMinutes(from: plan.place ?? home, to: next?.place, preferences: preferences)
-    }
-
-    private func travelMinutes(from origin: Place?, to destination: Place?, preferences: ComfortPreferences) -> Int {
-        guard let origin, let destination else { return 0 }
-        return travelTimes.travelEstimate(from: origin.coordinate, to: destination.coordinate, mode: preferences.travelMode).minutes
-    }
-
-    private func isWithinPlanningHours(_ interval: DateInterval, preferences: ComfortPreferences) -> Bool {
-        let startOfDay = calendar.startOfDay(for: interval.start)
-        let startMinute = calendar.dateComponents([.minute], from: startOfDay, to: interval.start).minute ?? 0
-        let endMinute = calendar.dateComponents([.minute], from: startOfDay, to: interval.end).minute ?? 0
-        return startMinute >= preferences.earliestPlanTime && endMinute <= preferences.latestPlanTime
     }
 
     // MARK: - Scoring (3.3)
