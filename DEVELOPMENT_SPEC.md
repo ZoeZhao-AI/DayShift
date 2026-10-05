@@ -324,6 +324,7 @@ Errors (`SuggestAlternativesError`):
   "Edit the plan to allow a different time or place."
 - `noViableAlternative` — "No time or place today keeps this plan within your limits." /
   "Try another day, or adjust your limits in Settings."
+  For a plan on another day, "today" becomes "tomorrow" or the day, e.g. "on Thursday 8 Oct".
 - `forecastUnavailable` (same wording as 3.2)
 
 ### 3.4 AcceptAlternativeUseCase

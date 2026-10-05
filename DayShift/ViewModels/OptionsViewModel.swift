@@ -93,8 +93,34 @@ final class OptionsViewModel {
             noResult = nil
         } catch {
             options = []
-            noResult = ErrorMessage(error)
+            noResult = message(for: error, now: now)
         }
+    }
+
+    /// The use case's wording says "today"; a plan on another day names its day,
+    /// e.g. "No time or place tomorrow keeps this plan within your limits."
+    private func message(for error: Error, now: Date) -> ErrorMessage {
+        let message = ErrorMessage(error)
+        guard error as? SuggestAlternativesError == .noViableAlternative,
+              !calendar.isDate(plan.start, inSameDayAs: now)
+        else { return message }
+        return ErrorMessage(
+            title: "No time or place \(dayPhrase(for: plan.start, now: now)) keeps this plan within your limits.",
+            detail: message.detail
+        )
+    }
+
+    /// "tomorrow", or e.g. "on Thursday 8 Oct".
+    private func dayPhrase(for date: Date, now: Date) -> String {
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now))
+        if let tomorrow, calendar.isDate(date, inSameDayAs: tomorrow) {
+            return "tomorrow"
+        }
+        let day = date.formatted(
+            Date.FormatStyle(locale: Locale(identifier: "en_AU"), calendar: calendar, timeZone: calendar.timeZone)
+                .weekday(.wide).day().month(.abbreviated)
+        )
+        return "on \(day)"
     }
 
     /// Uses the option. Returns the toast for Today, e.g. "Your run is now at
