@@ -94,6 +94,13 @@ final class PlanDetailViewModel {
         plan.start > now
     }
 
+    /// "See better options" when the plan needs attention, "Find other options"
+    /// otherwise; nil for a fixed plan or one that has started (7.4).
+    var optionsButtonTitle: String? {
+        guard plan.flexibility.allowsAnyChange, plan.start > now else { return nil }
+        return status == .needsAttention ? "See better options" : "Find other options"
+    }
+
     func load(now: Date = Date()) async {
         self.now = now
         do {
@@ -241,7 +248,7 @@ final class PlanDetailViewModel {
                            limitLabel: "Your limit \(Int(limit.rounded()))°C", value: \.apparentTemperatureC)
         case .poorAirQuality:
             let category = preferences.worstAcceptableAirQuality
-            guard let limit = pm25UpperBound(category) else { return nil }
+            guard let limit = category.pm25UpperBound else { return nil }
             return Measure(name: "Air quality", valueName: "PM2.5 (µg/m³)", limit: limit,
                            limitLabel: "Your limit (\(category.name))", value: \.pm25)
         case .uv:
@@ -257,17 +264,6 @@ final class PlanDetailViewModel {
             return Measure(name: "Chance of rain", valueName: "Rain (%)", limit: limit,
                            limitLabel: "Your limit \(preferences.maxRainProbability)%",
                            value: { Double($0.precipitationProbability) })
-        }
-    }
-
-    /// The highest PM2.5 still in a category, matching `AirQualityCategory(pm25:)`.
-    private static func pm25UpperBound(_ category: AirQualityCategory) -> Double? {
-        switch category {
-        case .good: return 25
-        case .fair: return 50
-        case .poor: return 100
-        case .veryPoor: return 300
-        case .extremelyPoor: return nil
         }
     }
 }

@@ -41,9 +41,9 @@ final class TodayViewModel {
     private(set) var alertsAreOff = false
     private(set) var showsAddSamplePlaces = false
     private(set) var hasLoaded = false
-    /// A short confirmation after saving a plan for another day, which is
-    /// listed under "Coming up" rather than "Your plans", e.g. "Saved for Monday 5 Oct."
-    private(set) var savedConfirmation: String?
+    /// A short confirmation at the bottom of Today, e.g. "Saved for Monday 5 Oct."
+    /// after saving a plan for another day, or "Your run is now at 5:30 pm."
+    private(set) var toast: String?
     private var plansByID: [UUID: PlannedActivity] = [:]
 
     private let checkUpcomingPlans: CheckUpcomingPlansUseCase
@@ -130,7 +130,7 @@ final class TodayViewModel {
                 laterPlans += dayPlans
                 groups.append(DayGroup(
                     id: day,
-                    title: offset == 1 ? "Tomorrow" : dayText(day),
+                    title: offset == 1 ? "Tomorrow" : TimeText.day(day, calendar: calendar),
                     rows: dayPlans.map { row(for: $0, check: nil, now: now) }
                 ))
             }
@@ -155,22 +155,20 @@ final class TodayViewModel {
     func planWasSaved(_ plan: PlannedActivity?, now: Date = Date()) async {
         await refresh(now: now)
         guard let plan, !calendar.isDate(plan.start, inSameDayAs: now) else {
-            savedConfirmation = nil
+            toast = nil
             return
         }
-        savedConfirmation = "Saved for \(dayText(plan.start))."
+        toast = "Saved for \(TimeText.day(plan.start, calendar: calendar))."
     }
 
-    func dismissSavedConfirmation() {
-        savedConfirmation = nil
+    /// After an option is used: refreshes Today and confirms the change.
+    func optionWasUsed(toast: String, now: Date = Date()) async {
+        await refresh(now: now)
+        self.toast = toast
     }
 
-    /// e.g. "Monday 5 Oct".
-    private func dayText(_ date: Date) -> String {
-        date.formatted(
-            Date.FormatStyle(locale: Locale(identifier: "en_AU"), calendar: calendar, timeZone: calendar.timeZone)
-                .weekday(.wide).day().month(.abbreviated)
-        )
+    func dismissToast() {
+        toast = nil
     }
 
     /// The plan behind a row, to open Plan Detail.

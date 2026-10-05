@@ -20,7 +20,8 @@ struct DayShiftApp: App {
                 TodayView(
                     viewModel: dependencies.today,
                     makePlanEditor: { dependencies.makePlanEditor(editing: $0) },
-                    makePlanDetail: { dependencies.makePlanDetail(for: $0) }
+                    makePlanDetail: { dependencies.makePlanDetail(for: $0) },
+                    makeOptions: { dependencies.makeOptions(for: $0) }
                 )
             case .failure(let error):
                 ErrorScreen(error: error)

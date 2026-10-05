@@ -10,6 +10,8 @@ final class AppDependencies {
     let preferences: PreferencesRepository
     let checkUpcomingPlans: CheckUpcomingPlansUseCase
     let planActivity: PlanActivityUseCase
+    let suggestAlternatives: SuggestAlternativesUseCase
+    let acceptAlternative: AcceptAlternativeUseCase
     let today: TodayViewModel
     private let conditions: ConditionsService
     private let widget: WidgetRefreshing
@@ -49,7 +51,29 @@ final class AppDependencies {
             calendar: calendar
         )
 
+        let suggestAlternatives = SuggestAlternativesUseCase(
+            activities: activities,
+            places: places,
+            preferences: preferences,
+            conditions: conditions,
+            travelTimes: travelTimes,
+            calendar: calendar
+        )
+        let acceptAlternative = AcceptAlternativeUseCase(
+            activities: activities,
+            places: places,
+            preferences: preferences,
+            conditions: conditions,
+            travelTimes: travelTimes,
+            planChecker: checkUpcomingPlans,
+            widget: widget,
+            notifications: notifications,
+            calendar: calendar
+        )
+
         self.activities = activities
+        self.suggestAlternatives = suggestAlternatives
+        self.acceptAlternative = acceptAlternative
         self.places = places
         self.preferences = preferences
         self.checkUpcomingPlans = checkUpcomingPlans
@@ -70,6 +94,16 @@ final class AppDependencies {
     /// A Plan Editor for a new plan, or for `plan` when editing.
     func makePlanEditor(editing plan: PlannedActivity? = nil) -> PlanEditorViewModel {
         PlanEditorViewModel(editing: plan, planActivity: planActivity, places: places, calendar: calendar)
+    }
+
+    func makeOptions(for plan: PlannedActivity) -> OptionsViewModel {
+        OptionsViewModel(
+            plan: plan,
+            suggestAlternatives: suggestAlternatives,
+            acceptAlternative: acceptAlternative,
+            activities: activities,
+            calendar: calendar
+        )
     }
 
     func makePlanDetail(for plan: PlannedActivity) -> PlanDetailViewModel {
