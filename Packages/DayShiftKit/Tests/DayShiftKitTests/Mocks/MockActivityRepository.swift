@@ -5,6 +5,8 @@ import Foundation
 /// what was saved. Set `errorToThrow` to make every call fail.
 final class MockActivityRepository: ActivityRepository {
     var errorToThrow: Error?
+    /// Makes only `applyAdjustment` fail, after the plans have been read.
+    var applyAdjustmentErrorToThrow: Error?
 
     private(set) var storedPlans: [UUID: PlannedActivity]
     private(set) var storedChecks: [UUID: PlanCheck] = [:]
@@ -91,6 +93,7 @@ final class MockActivityRepository: ActivityRepository {
     /// All or nothing: checks every plan exists before changing anything.
     func applyAdjustment(changedPlans: [PlannedActivity], records: [AdjustmentRecord]) async throws {
         try throwIfNeeded()
+        if let applyAdjustmentErrorToThrow { throw applyAdjustmentErrorToThrow }
         for id in changedPlans.map(\.id) + records.map(\.planID) {
             try requirePlan(id)
         }
