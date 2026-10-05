@@ -172,6 +172,51 @@ struct SuggestAlternativesUseCaseTests {
             try await setup.useCase.execute(for: plan, now: setup.day.now)
         }
     }
+
+    @Test("A run planned for tomorrow gets options")
+    func runPlannedForTomorrowGetsOptions() async throws {
+        // Thursday evening, Lin looks at Friday's 7 am run under "Coming up".
+        // Friday has the same weather as Thursday at every place.
+        let oneDay: TimeInterval = 24 * 60 * 60
+        var fridayRun: PlannedActivity?
+        let setup = try Setup { day in
+            let run = try PlannedActivity(
+                typeID: ActivityCatalogue.run.id, title: "Run",
+                start: day.time(7).addingTimeInterval(oneDay), durationMinutes: 45,
+                place: day.enmorePark, mode: .inPerson,
+                flexibility: ActivityFlexibility(
+                    movableWindow: DateInterval(
+                        start: day.time(6).addingTimeInterval(oneDay),
+                        end: day.time(21).addingTimeInterval(oneDay)
+                    ),
+                    allowsPlaceChange: false
+                )
+            )
+            fridayRun = run
+            return [run]
+        }
+        let fridayHours = try setup.day.hourlyConditions().map {
+            try HourlyConditions(
+                time: $0.time.addingTimeInterval(oneDay),
+                temperatureC: $0.temperatureC,
+                apparentTemperatureC: $0.apparentTemperatureC,
+                precipitationProbability: $0.precipitationProbability,
+                uvIndex: $0.uvIndex,
+                windGustsKmh: $0.windGustsKmh,
+                pm25: $0.pm25
+            )
+        }
+        for place in setup.day.places {
+            setup.conditions.setHours(fridayHours, at: place.coordinate)
+        }
+        let run = try #require(fridayRun)
+
+        let suggestions = try await setup.useCase.execute(for: run, now: setup.day.time(19))
+
+        #expect(!suggestions.options.isEmpty)
+        // Friday's 10 am is clear of smoke and before the UV peak, as on Thursday.
+        #expect(suggestions.options.first?.adjustment == .shiftTime(newStart: setup.day.time(10).addingTimeInterval(oneDay)))
+    }
 }
 
 extension HourlyConditions {
