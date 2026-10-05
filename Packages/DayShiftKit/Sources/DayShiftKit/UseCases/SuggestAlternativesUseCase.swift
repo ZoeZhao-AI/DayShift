@@ -555,19 +555,85 @@ public struct SuggestAlternativesUseCase {
             return Self.sentence(clauses) ?? "Within your limits at \(TimeText.time(candidate.start, calendar: calendar))."
         }
 
-        var sentences: [String] = []
+        // Looks good: say what is different, not the new time (the title shows it).
+        var sentences = betterConditions(
+            candidate: candidate, original: original, place: place,
+            context: context, activityType: activityType
+        )
         let originalCrowd = original.place?.kind.typicalCrowd(at: original.start, calendar: calendar)
         let crowd = place.kind.typicalCrowd(at: candidate.start, calendar: calendar)
-        if let originalCrowd, Self.rank(crowd) < Self.rank(originalCrowd) {
-            let time = TimeText.shortTime(candidate.start, calendar: calendar)
-            sentences.append(crowd == .quiet
-                ? "Usually quiet at \(time) (estimate)."
-                : "Usually less busy at \(time) (estimate).")
+        let time = TimeText.shortTime(candidate.start, calendar: calendar)
+        if crowd == .quiet {
+            sentences.append("Usually quiet at \(time) (estimate).")
+        } else if let originalCrowd, Self.rank(crowd) < Self.rank(originalCrowd) {
+            sentences.append("Usually less busy at \(time) (estimate).")
         }
         if sentences.isEmpty {
-            sentences.append("Starts at \(TimeText.time(candidate.start, calendar: calendar)) instead of \(TimeText.time(original.start, calendar: calendar)).")
+            sentences.append("Conditions stay within your limits.")
         }
         return sentences.joined(separator: " ")
+    }
+
+    /// What is clearly better at the option's time than at the plan's own time,
+    /// e.g. "Cooler, 19°C feels like." At most two, in 3.2's order of conditions.
+    private func betterConditions(
+        candidate: PlannedActivity,
+        original: PlannedActivity,
+        place: Place,
+        context: PlanAssessor.Context,
+        activityType: ActivityType?
+    ) -> [String] {
+        guard let forecast = context.forecasts[place.coordinate] else { return [] }
+        if place.isIndoor {
+            guard !place.isCooled, place.uncooledHeatLimitC != nil else { return [] }
+            let startOfDay = calendar.startOfDay(for: candidate.start)
+            func hottest(until end: Date) -> Double? {
+                forecast.hours.filter { $0.time >= startOfDay && $0.time < end }.map(\.temperatureC).max()
+            }
+            guard let new = hottest(until: candidate.end), let old = hottest(until: original.end),
+                  new <= old - 2 else { return [] }
+            return ["Cooler outside, \(Self.whole(new))°C."]
+        }
+
+        let newHours = forecast.conditions(during: candidate.interval)
+        let oldHours = forecast.conditions(during: original.interval)
+        guard !newHours.isEmpty, !oldHours.isEmpty else { return [] }
+        func worst(_ hours: [HourlyConditions], _ value: (HourlyConditions) -> Double) -> Double {
+            hours.map(value).max() ?? 0
+        }
+
+        let sensitivities = activityType?.sensitivities ?? Set(ConditionSensitivity.allCases)
+        var sentences: [String] = []
+        for sensitivity in ConditionSensitivity.allCases where sensitivities.contains(sensitivity) {
+            switch sensitivity {
+            case .heat:
+                let new = worst(newHours, \.apparentTemperatureC)
+                if new <= worst(oldHours, \.apparentTemperatureC) - 2 {
+                    sentences.append("Cooler, \(Self.whole(new))°C feels like.")
+                }
+            case .poorAirQuality:
+                if let new = newHours.map(\.airQuality).max(), let old = oldHours.map(\.airQuality).max(), new < old {
+                    sentences.append("Better air quality (\(new.name)).")
+                }
+            case .uv:
+                let new = worst(newHours, \.uvIndex)
+                if new <= worst(oldHours, \.uvIndex) - 2 {
+                    sentences.append(new <= 2 ? "UV is low." : "Lower UV (\(Self.whole(new))).")
+                }
+            case .wind:
+                let new = worst(newHours, \.windGustsKmh)
+                if new <= worst(oldHours, \.windGustsKmh) - 10 {
+                    sentences.append("Lighter wind, gusts \(Self.whole(new)) km/h.")
+                }
+            case .rain:
+                let rain: (HourlyConditions) -> Double = { Double($0.precipitationProbability) }
+                let new = worst(newHours, rain)
+                if new <= worst(oldHours, rain) - 10 {
+                    sentences.append("Less chance of rain (\(Self.whole(new))%).")
+                }
+            }
+        }
+        return Array(sentences.prefix(2))
     }
 
     /// e.g. "Grocery run moves from 5:30 to 6:30 pm. Your 11 am client call is not affected."
