@@ -173,6 +173,36 @@ struct SuggestAlternativesUseCaseTests {
         }
     }
 
+    @Test("No options names the wind that blocks every time")
+    func noOptionsNamesTheWind() async throws {
+        // Outdoor sketching at Enmore Park with gusts of 55 km/h all day, as in
+        // the noViableAlternative test. Smoke, UV and heat rule out only some
+        // hours; the wind rules out every one, so it comes first.
+        var sketching: PlannedActivity?
+        let setup = try Setup { day in
+            let plan = try PlannedActivity(
+                typeID: ActivityCatalogue.outdoorSketching.id, title: "Outdoor sketching",
+                start: day.time(18, 15), durationMinutes: 60,
+                place: day.enmorePark, mode: .inPerson,
+                flexibility: ActivityFlexibility(
+                    movableWindow: DateInterval(start: day.time(6), end: day.time(21)),
+                    allowsPlaceChange: true
+                )
+            )
+            sketching = plan
+            return [plan]
+        }
+        try setup.setHours(at: setup.day.enmorePark) { _, _ in
+            HourlyConditions.Changes(windGustsKmh: 55)
+        }
+        let plan = try #require(sketching)
+
+        let reasons = try await setup.useCase.reasonsWithoutOptions(for: plan, now: setup.day.now)
+
+        #expect(reasons.first == "Wind gusts 55 km/h all day, above your limit of 40 km/h.")
+        #expect(reasons.last == "None of your other places suit Outdoor sketching.")
+    }
+
     @Test("A run planned for tomorrow gets options")
     func runPlannedForTomorrowGetsOptions() async throws {
         // Thursday evening, Lin looks at Friday's 7 am run under "Coming up".
