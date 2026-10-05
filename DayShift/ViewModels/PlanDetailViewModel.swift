@@ -94,6 +94,13 @@ final class PlanDetailViewModel {
         plan.start > now
     }
 
+    /// "See better options" when the plan needs attention, "Find other options"
+    /// otherwise; nil for a fixed plan or one that has started (7.4).
+    var optionsButtonTitle: String? {
+        guard plan.flexibility.allowsAnyChange, plan.start > now else { return nil }
+        return status == .needsAttention ? "See better options" : "Find other options"
+    }
+
     func load(now: Date = Date()) async {
         self.now = now
         do {

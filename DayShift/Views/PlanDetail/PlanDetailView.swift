@@ -10,16 +10,20 @@ struct PlanDetailView: View {
     @State private var isConfirmingDelete = false
     @Environment(\.dismiss) private var dismiss
     private let makePlanEditor: (PlannedActivity?) -> PlanEditorViewModel
+    /// Opens the Options screen for this plan.
+    private let openOptions: (PlannedActivity) -> Void
     /// Called after the plan is edited or deleted, so Today can refresh.
     private let onChanged: () -> Void
 
     init(
         viewModel: PlanDetailViewModel,
         makePlanEditor: @escaping (PlannedActivity?) -> PlanEditorViewModel,
+        openOptions: @escaping (PlannedActivity) -> Void,
         onChanged: @escaping () -> Void
     ) {
         _viewModel = State(initialValue: viewModel)
         self.makePlanEditor = makePlanEditor
+        self.openOptions = openOptions
         self.onChanged = onChanged
     }
 
@@ -61,6 +65,15 @@ struct PlanDetailView: View {
                 Section {
                 } footer: {
                     Text(checkedText).frame(maxWidth: .infinity, alignment: .center)
+                }
+            }
+
+            if let optionsTitle = viewModel.optionsButtonTitle {
+                Section {
+                    Button(optionsTitle) { openOptions(viewModel.plan) }
+                        .buttonStyle(.borderedProminent)
+                        .frame(maxWidth: .infinity)
+                        .listRowBackground(Color.clear)
                 }
             }
 

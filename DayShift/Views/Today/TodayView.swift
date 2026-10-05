@@ -8,20 +8,23 @@ import UIKit
 struct TodayView: View {
     @State private var viewModel: TodayViewModel
     @State private var planEditor: PlanEditorViewModel?
-    @State private var path: [PlanDetailViewModel] = []
+    @State private var path = NavigationPath()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     private let makePlanEditor: (PlannedActivity?) -> PlanEditorViewModel
     private let makePlanDetail: (PlannedActivity) -> PlanDetailViewModel
+    private let makeOptions: (PlannedActivity) -> OptionsViewModel
 
     init(
         viewModel: TodayViewModel,
         makePlanEditor: @escaping (PlannedActivity?) -> PlanEditorViewModel,
-        makePlanDetail: @escaping (PlannedActivity) -> PlanDetailViewModel
+        makePlanDetail: @escaping (PlannedActivity) -> PlanDetailViewModel,
+        makeOptions: @escaping (PlannedActivity) -> OptionsViewModel
     ) {
         _viewModel = State(initialValue: viewModel)
         self.makePlanEditor = makePlanEditor
         self.makePlanDetail = makePlanDetail
+        self.makeOptions = makeOptions
     }
 
     var body: some View {
@@ -124,8 +127,18 @@ struct TodayView: View {
             }
             .refreshable { await viewModel.refresh() }
             .navigationDestination(for: PlanDetailViewModel.self) { detail in
-                PlanDetailView(viewModel: detail, makePlanEditor: makePlanEditor) {
-                    Task { await viewModel.refresh() }
+                PlanDetailView(
+                    viewModel: detail,
+                    makePlanEditor: makePlanEditor,
+                    openOptions: { plan in path.append(makeOptions(plan)) },
+                    onChanged: { Task { await viewModel.refresh() } }
+                )
+            }
+            .navigationDestination(for: OptionsViewModel.self) { options in
+                OptionsView(viewModel: options) { toast in
+                    // Back to Today, with the change confirmed (7.4).
+                    path = NavigationPath()
+                    Task { await viewModel.optionWasUsed(toast: toast) }
                 }
             }
             .sheet(item: $planEditor) { editor in
@@ -134,17 +147,17 @@ struct TodayView: View {
                 }
             }
             .overlay(alignment: .bottom) {
-                if let confirmation = viewModel.savedConfirmation {
-                    Toast(text: confirmation)
+                if let toast = viewModel.toast {
+                    Toast(text: toast)
                         .padding()
                         .transition(.move(edge: .bottom).combined(with: .opacity))
-                        .task(id: confirmation) {
+                        .task(id: toast) {
                             try? await Task.sleep(for: .seconds(4))
-                            withAnimation { viewModel.dismissSavedConfirmation() }
+                            withAnimation { viewModel.dismissToast() }
                         }
                 }
             }
-            .animation(.default, value: viewModel.savedConfirmation)
+            .animation(.default, value: viewModel.toast)
         }
         .tint(.teal)
         .onChange(of: scenePhase, initial: true) { _, phase in
@@ -233,7 +246,8 @@ private struct PlanRowView: View {
         TodayView(
             viewModel: dependencies.today,
             makePlanEditor: { dependencies.makePlanEditor(editing: $0) },
-            makePlanDetail: { dependencies.makePlanDetail(for: $0) }
+            makePlanDetail: { dependencies.makePlanDetail(for: $0) },
+            makeOptions: { dependencies.makeOptions(for: $0) }
         )
     }
 }
