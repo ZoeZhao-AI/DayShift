@@ -300,10 +300,24 @@ Candidates:
 3. Knock-on: if a time shift is blocked by exactly one flexible plan, try moving
    that plan inside its own window; the moved plan must also pass the check.
 Each candidate must pass the same checks as 3.2 with no problems.
-Scoring: 50 conditions margin + 30 smallest change (closer time, same place) +
-20 no knock-on. Return the best three.
-If the plan already looks good, return only candidates scoring higher than the
-current plan ("Other good options").
+Scoring (0–100):
+- Conditions margin 0–40: outdoor places use the activity's sensitivities;
+  indoor places without AC use the outside temperature against the place's limit;
+  indoor places with AC score the full 40. For each measure, take the worst hour
+  during the plan: margin = (limit − worst) / limit, kept between 0 and 1. Air
+  quality compares PM2.5 with the top of Lin's worst acceptable category (Fair → 50).
+  Score = 40 × the smallest margin, rounded.
+- Smallest change 0–30: a time shift scores 30 minus 1 per 30 minutes moved
+  (not below 0); a place change at the same time scores 15.
+- No knock-on: 20.
+- Crowds 0–10: `typicalCrowd` of the place at the option's time: usually quiet 10,
+  moderately busy 5, busy 0.
+Return the best three by score.
+- Plan needs attention: options must solve every problem (no problems in their check).
+- Plan looks good ("Other good options"): return up to three valid options ranked by
+  score, even if none beats the current plan, so "Find other options" always shows
+  options for a flexible plan. Each explanation says what is different, e.g.
+  "Usually quiet after 7 pm (estimate)."
 Rules: never move fixed plans; never change duration; at most one knock-on.
 Errors (`SuggestAlternativesError`):
 - `planHasNoFlexibility` — "This plan is fixed, so DayShift can't suggest changes." /
@@ -693,6 +707,8 @@ Record every change to this spec during development (commit as `docs:`).
 | 4 Oct 2026 | Temporary "Add sample places" button on Today saves Lin's four places through PlaceRepository; Step 10 removes it | Plans need saved places before My Places and the Place Editor exist (Step 10) |
 | 4 Oct 2026 | ViewModels may read data from service protocols as well as repository protocols (1.3) | The Plan Detail chart needs the forecast for the plan's place; reading it through ConditionsService (cached) is read-only and needs no business rule |
 | 4 Oct 2026 | Today gets a "Coming up" section with plans for the next 7 days, shown as "Checked on the day" (7.3, 7.4) | Lin couldn't see plans saved for another day, so it looked as if nothing was saved; future plans aren't checked until their day |
+| 5 Oct 2026 | Defined the 3.3 scoring: conditions margin 0–40, smallest change 0–30, no knock-on 20, crowds 0–10 | 3.3 named the parts but not how to score them; crowds are added so quieter times can be offered, as in the prototype's grocery options |
+| 5 Oct 2026 | A plan that looks good gets up to three valid options even if none beats it (3.3) | With "only higher-scoring options", a plan that looks good would usually get none; "Find other options" must always show the primary use case for a flexible plan |
 
 ---
 
