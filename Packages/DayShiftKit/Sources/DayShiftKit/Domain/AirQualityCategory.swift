@@ -24,6 +24,18 @@ public enum AirQualityCategory: String, CaseIterable, Codable, Hashable, Sendabl
 }
 
 extension AirQualityCategory {
+    /// The highest PM2.5 (µg/m³) still in this category, matching
+    /// `init(pm25:)`; nil for the worst category, which has no upper limit.
+    public var pm25UpperBound: Double? {
+        switch self {
+        case .good: return 25
+        case .fair: return 50
+        case .poor: return 100
+        case .veryPoor: return 300
+        case .extremelyPoor: return nil
+        }
+    }
+
     /// How the category is written for Lin, e.g. "Poor", "Very poor".
     public var name: String {
         switch self {
