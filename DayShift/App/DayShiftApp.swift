@@ -19,6 +19,7 @@ struct DayShiftApp: App {
             case .success(let dependencies):
                 TodayView(
                     viewModel: dependencies.today,
+                    notificationRouter: dependencies.notificationRouter,
                     makePlanEditor: { dependencies.makePlanEditor(editing: $0) },
                     makePlanDetail: { dependencies.makePlanDetail(for: $0) },
                     makeOptions: { dependencies.makeOptions(for: $0) }

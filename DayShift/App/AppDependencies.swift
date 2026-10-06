@@ -13,6 +13,8 @@ final class AppDependencies {
     let suggestAlternatives: SuggestAlternativesUseCase
     let acceptAlternative: AcceptAlternativeUseCase
     let today: TodayViewModel
+    /// Kept here because the notification centre holds its delegate weakly.
+    let notificationRouter = NotificationRouter()
     private let conditions: ConditionsService
     private let widget: WidgetRefreshing
     private let notifications: NotificationScheduling
@@ -37,6 +39,7 @@ final class AppDependencies {
             calendar: calendar
         )
         LocalNotificationScheduler.registerCategory()
+        notificationRouter.becomeDelegate()
         let notifications = LocalNotificationScheduler(
             activities: activities,
             preferences: preferences,
