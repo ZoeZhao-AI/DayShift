@@ -31,6 +31,30 @@ public enum PlanDisplayStatus: Equatable, Sendable {
         }
     }
 
+    /// The status in words; with `symbolName` it is always shown as icon + words (7.4).
+    public var text: String {
+        switch self {
+        case .looksGood: return "Looks good"
+        case .needsAttention: return "Needs attention"
+        case .notCheckedYet: return "Not checked yet"
+        case .inProgress: return "In progress"
+        case .done: return "Done"
+        case .checkedOnTheDay: return "Checked on the day"
+        }
+    }
+
+    /// The SF Symbol shown with `text`.
+    public var symbolName: String {
+        switch self {
+        case .looksGood: return "checkmark.circle.fill"
+        case .needsAttention: return "exclamationmark.triangle.fill"
+        case .notCheckedYet: return "clock"
+        case .inProgress: return "play.circle"
+        case .done: return "checkmark"
+        case .checkedOnTheDay: return "calendar"
+        }
+    }
+
     /// The check to show for a plan: its saved check while it is upcoming
     /// today, otherwise none.
     public static func shownCheck(of plan: PlannedActivity, check: PlanCheck?, now: Date, calendar: Calendar) -> PlanCheck? {

@@ -24,6 +24,28 @@ public struct WidgetSnapshot: Equatable, Sendable {
         public let reason: String?
         /// e.g. "Leave by 12:35 pm", for an upcoming in-person plan.
         public let leaveByText: String?
+
+        public init(
+            planID: UUID,
+            title: String,
+            timeText: String,
+            placeText: String,
+            status: PlanDisplayStatus,
+            reason: String?,
+            leaveByText: String?
+        ) {
+            self.planID = planID
+            self.title = title
+            self.timeText = timeText
+            self.placeText = placeText
+            self.status = status
+            self.reason = reason
+            self.leaveByText = leaveByText
+        }
+    }
+
+    public init(content: Content) {
+        self.content = content
     }
 
     /// Medium shows the next plan and this many after it.
