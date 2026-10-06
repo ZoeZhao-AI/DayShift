@@ -36,7 +36,7 @@ struct NextPlanWidgetView: View {
             // Small has one tap target: the coming-up plan if there is one.
             MessageView(title: title, detail: detail, comingUp: entry.snapshot.comingUp, isMedium: family == .systemMedium)
                 .widgetURL(family == .systemSmall
-                    ? (entry.snapshot.comingUp.map { DeepLink.plan($0.planID).url } ?? DeepLink.today.url)
+                    ? (entry.snapshot.comingUp?.lines.first.map { DeepLink.plan($0.planID).url } ?? DeepLink.today.url)
                     : DeepLink.today.url)
         }
     }
@@ -129,11 +129,11 @@ private struct MediumPlansView: View {
 }
 
 /// "Your day is clear." / "That's everything for today.", and below it the
-/// next plan coming up, without a status (6.2).
+/// next day's plans coming up, without a status (6.2).
 private struct MessageView: View {
     let title: String
     let detail: String?
-    let comingUp: WidgetSnapshot.ComingUpLine?
+    let comingUp: WidgetSnapshot.ComingUpDay?
     let isMedium: Bool
 
     var body: some View {
@@ -145,22 +145,27 @@ private struct MessageView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            if let comingUp {
+            if let comingUp, let first = comingUp.lines.first {
                 Spacer(minLength: 4)
                 if isMedium {
-                    Link(destination: DeepLink.plan(comingUp.planID).url) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Coming up · \(comingUp.dayText)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Text("\(comingUp.timeText) \(comingUp.title) · \(comingUp.placeText)")
+                    Text("Coming up · \(comingUp.dayText)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    ForEach(comingUp.lines, id: \.planID) { line in
+                        Link(destination: DeepLink.plan(line.planID).url) {
+                            Text("\(line.timeText) \(line.title) · \(line.placeText)")
                                 .font(.subheadline)
                                 .lineLimit(1)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    if comingUp.moreCount > 0 {
+                        Text("+\(comingUp.moreCount) more")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 } else {
-                    Text("\(comingUp.dayText) \(comingUp.timeText) · \(comingUp.title)")
+                    Text("\(comingUp.dayText) \(first.timeText) · \(first.title)")
                         .font(.caption)
                         .lineLimit(2)
                 }
@@ -197,8 +202,15 @@ private struct WidgetStatusLabel: View {
     NextPlanEntry.placeholder
     NextPlanEntry(date: .now, snapshot: WidgetSnapshot(
         content: .message(title: "That's everything for today.", detail: nil),
-        comingUp: WidgetSnapshot.ComingUpLine(
-            planID: UUID(), title: "Run", dayText: "Tomorrow", timeText: "7:00 am", placeText: "Enmore Park"
+        comingUp: WidgetSnapshot.ComingUpDay(
+            dayText: "Tomorrow",
+            lines: [
+                WidgetSnapshot.ComingUpLine(planID: UUID(), title: "Run", symbolName: "figure.run",
+                                            timeText: "7:00 am", placeText: "Enmore Park"),
+                WidgetSnapshot.ComingUpLine(planID: UUID(), title: "Focus work", symbolName: "laptopcomputer",
+                                            timeText: "1:00 pm", placeText: "Newtown Library")
+            ],
+            moreCount: 1
         )
     ))
 }
