@@ -160,6 +160,19 @@ struct TodayView: View {
             .animation(.default, value: viewModel.toast)
         }
         .tint(.teal)
+        .onOpenURL { url in
+            guard let link = DeepLink(url: url) else { return }
+            // Close any sheet and go back to Today first.
+            planEditor = nil
+            path = NavigationPath()
+            Task { await viewModel.open(link) }
+        }
+        .onChange(of: viewModel.planToOpen) { _, plan in
+            guard let plan else { return }
+            path = NavigationPath()
+            path.append(makePlanDetail(plan))
+            viewModel.planOpened()
+        }
         .onChange(of: scenePhase, initial: true) { _, phase in
             if phase == .active {
                 Task { await viewModel.refresh() }

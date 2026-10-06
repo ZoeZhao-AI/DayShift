@@ -146,6 +146,22 @@ struct CheckUpcomingPlansUseCaseTests {
         #expect(setup.activities.storedNotifiedReasons[setup.day.run.id] == ["poorAirQuality"])
     }
 
+    @Test("A check that fails partway still refreshes the widget")
+    func failedCheckPartwayStillRefreshesWidget() async throws {
+        // Saving the third plan's check (Focus work) fails, after the run
+        // and the client call have new checks in the store.
+        let setup = try Setup()
+        setup.activities.saveCheckFailsFromCall = 3
+
+        await #expect(throws: PersistenceError.self) {
+            _ = try await setup.useCase.execute(now: setup.day.now)
+        }
+
+        #expect(setup.activities.savedChecks.map(\.planID) == [setup.day.run.id, setup.day.clientCall.id])
+        // The widget shows the two new checks rather than the old ones.
+        #expect(setup.widget.reloadCount == 1)
+    }
+
     @Test("A plan saved for another day is not alerted early")
     func planForAnotherDayIsNotAlertedEarly() async throws {
         // Friday's 7:00 am run, saved on Thursday at 6:40 am. Friday has the
