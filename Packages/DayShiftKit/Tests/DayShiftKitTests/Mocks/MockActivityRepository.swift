@@ -7,6 +7,11 @@ final class MockActivityRepository: ActivityRepository {
     var errorToThrow: Error?
     /// Makes only `applyAdjustment` fail, after the plans have been read.
     var applyAdjustmentErrorToThrow: Error?
+    /// Makes `saveCheck` fail from this call on (1 = the first call), so a
+    /// check can fail partway through a day.
+    var saveCheckFailsFromCall: Int?
+    var saveCheckErrorToThrow: Error = PersistenceError.couldNotSave(underlying: CocoaError(.fileWriteUnknown))
+    private var saveCheckCalls = 0
 
     private(set) var storedPlans: [UUID: PlannedActivity]
     private(set) var storedChecks: [UUID: PlanCheck] = [:]
@@ -67,6 +72,10 @@ final class MockActivityRepository: ActivityRepository {
 
     func saveCheck(_ check: PlanCheck) async throws {
         try throwIfNeeded()
+        saveCheckCalls += 1
+        if let failsFrom = saveCheckFailsFromCall, saveCheckCalls >= failsFrom {
+            throw saveCheckErrorToThrow
+        }
         try requirePlan(check.planID)
         storedChecks[check.planID] = check
         savedChecks.append(check)
