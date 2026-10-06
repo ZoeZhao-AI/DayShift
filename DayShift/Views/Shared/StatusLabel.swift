@@ -1,3 +1,4 @@
+import DayShiftKit
 import SwiftUI
 
 /// Status is always icon + words; amber only for "Needs attention" (7.4).
