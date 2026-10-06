@@ -56,8 +56,16 @@ public struct CheckUpcomingPlansUseCase: PlanChecking {
         let plans = try await activities.checkablePlans(on: now, now: now)
         let context = try await makeContext(for: plans, day: now)
         var checks: [PlanCheck] = []
-        for plan in plans {
-            checks.append(try await process(plan, context: context, now: now))
+        do {
+            for plan in plans {
+                checks.append(try await process(plan, context: context, now: now))
+            }
+        } catch {
+            // Checks saved before the failure are in the store; show them.
+            if !checks.isEmpty {
+                widget.reload()
+            }
+            throw error
         }
         widget.reload()
         return checks
