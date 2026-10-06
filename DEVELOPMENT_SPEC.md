@@ -472,6 +472,11 @@ Families: `systemSmall`, `systemMedium`.
   two plans in one line each.
 - Empty: "Your day is clear." / "Plan an activity in DayShift."
   All done: "That's everything for today."
+  Below either message, the next plan within the next 7 days, if any:
+  "Coming up · Tomorrow" with "7:00 am Run · Enmore Park" (medium), or
+  "Tomorrow 7:00 am · Run" (small). It shows no check status, since future
+  plans aren't checked yet, and tapping it opens that plan. With nothing in
+  the next 7 days, only the message.
 - Timeline: an entry now and at each plan's start and end; policy `.atEnd`.
   After the last plan has ended, policy `.after` the start of tomorrow.
 - Tap: `widgetURL` dayshift://plan/<id> (small); medium uses `Link` per row.
@@ -712,6 +717,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 5 Oct 2026 | Defined the 3.3 scoring: conditions margin 0–40, smallest change 0–30, no knock-on 20, crowds 0–10 | 3.3 named the parts but not how to score them; crowds are added so quieter times can be offered, as in the prototype's grocery options |
 | 5 Oct 2026 | A plan that looks good gets up to three valid options even if none beats it (3.3) | With "only higher-scoring options", a plan that looks good would usually get none; "Find other options" must always show the primary use case for a flexible plan |
 | 6 Oct 2026 | After the last plan of the day, the widget timeline reloads at the start of tomorrow instead of `.atEnd` (6.2) | With no plan left, the timeline has a single entry, and `.atEnd` would make WidgetKit ask again straight away, over and over; the app still reloads the widget whenever a plan changes |
+| 6 Oct 2026 | The widget's empty and all-done states also show the next plan within 7 days (6.2) | As on Today's "Coming up", Lin can see her next plan from the Home Screen even when today has nothing left |
 
 ---
 
