@@ -129,49 +129,85 @@ private struct MediumPlansView: View {
 }
 
 /// "Your day is clear." / "That's everything for today.", and below it the
-/// next day's plans coming up, without a status (6.2).
+/// next day's plans coming up, without a status (6.2). Kept together near
+/// the top; teal is the only accent (7.4).
 private struct MessageView: View {
     let title: String
     let detail: String?
     let comingUp: WidgetSnapshot.ComingUpDay?
     let isMedium: Bool
 
+    /// All done has no second line; day clear always has "Plan an activity in DayShift."
+    private var isAllDone: Bool { detail == nil }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.headline)
-            if let detail {
-                Text(detail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: isMedium ? 8 : 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Image(systemName: isAllDone ? "checkmark.circle.fill" : "calendar")
+                    .foregroundStyle(.teal)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.headline)
+                    if let detail {
+                        Text(detail)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
+
             if let comingUp, let first = comingUp.lines.first {
-                Spacer(minLength: 4)
+                Text("Coming up · \(comingUp.dayText)".uppercased())
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 2)
                 if isMedium {
-                    Text("Coming up · \(comingUp.dayText)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                     ForEach(comingUp.lines, id: \.planID) { line in
                         Link(destination: DeepLink.plan(line.planID).url) {
-                            Text("\(line.timeText) \(line.title) · \(line.placeText)")
-                                .font(.subheadline)
-                                .lineLimit(1)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            ComingUpRow(line: line, showsPlace: true)
                         }
                     }
                     if comingUp.moreCount > 0 {
                         Text("+\(comingUp.moreCount) more")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                            .padding(.leading, ComingUpRow.symbolSize + 8)
                     }
                 } else {
-                    Text("\(comingUp.dayText) \(first.timeText) · \(first.title)")
-                        .font(.caption)
-                        .lineLimit(2)
+                    ComingUpRow(line: first, showsPlace: false)
                 }
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+}
+
+/// The activity symbol in a light teal circle, the time in a bolder weight,
+/// then the title (and place on medium).
+private struct ComingUpRow: View {
+    static let symbolSize: CGFloat = 24
+
+    let line: WidgetSnapshot.ComingUpLine
+    let showsPlace: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: line.symbolName)
+                .font(.caption)
+                .foregroundStyle(.teal)
+                .frame(width: Self.symbolSize, height: Self.symbolSize)
+                .background(Color.teal.opacity(0.15), in: Circle())
+                .accessibilityHidden(true)
+            (Text(line.timeText).fontWeight(.semibold)
+                + Text(" \(line.title)")
+                + Text(showsPlace ? " · \(line.placeText)" : "").foregroundColor(.secondary))
+                .font(.subheadline)
+                .lineLimit(showsPlace ? 1 : 2)
+                .minimumScaleFactor(0.85)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
     }
 }
 
