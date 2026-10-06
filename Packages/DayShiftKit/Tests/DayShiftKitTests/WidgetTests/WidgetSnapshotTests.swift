@@ -53,13 +53,39 @@ struct WidgetSnapshotTests {
         )
 
         #expect(snapshot.content == .message(title: "That's everything for today.", detail: nil))
-        #expect(snapshot.comingUp == WidgetSnapshot.ComingUpLine(
-            planID: fridayRun.id,
-            title: "Run",
+        #expect(snapshot.comingUp == WidgetSnapshot.ComingUpDay(
             dayText: "Tomorrow",
-            timeText: "7:00 am",
-            placeText: "Enmore Park"
+            lines: [WidgetSnapshot.ComingUpLine(
+                planID: fridayRun.id,
+                title: "Run",
+                symbolName: "figure.run",
+                timeText: "7:00 am",
+                placeText: "Enmore Park"
+            )],
+            moreCount: 0
         ))
+    }
+
+    @Test("The medium widget shows up to two plans coming up that day")
+    func showsUpToTwoPlansComingUpThatDay() throws {
+        let day = try LinsThursday()
+        // Friday has three plans; Saturday has one more.
+        let fridayRun = try runOn(day, daysLater: 1)
+        let fridayFocus = try plan(ActivityCatalogue.focusWork, at: 13, place: day.newtownLibrary, on: day, daysLater: 1)
+        let fridayGrocery = try plan(ActivityCatalogue.groceryRun, at: 17, place: day.marrickvilleMetro, on: day, daysLater: 1)
+        let saturdayRun = try runOn(day, daysLater: 2)
+
+        let snapshot = WidgetSnapshot(
+            plans: day.plans, upcoming: [fridayGrocery, saturdayRun, fridayFocus, fridayRun], checks: [:],
+            now: day.time(18, 30), calendar: day.calendar
+        )
+
+        let comingUp = try #require(snapshot.comingUp)
+        #expect(comingUp.dayText == "Tomorrow")
+        // The first two Friday plans by time, then "+1 more"; Saturday isn't counted.
+        #expect(comingUp.lines.map(\.planID) == [fridayRun.id, fridayFocus.id])
+        #expect(comingUp.lines.map(\.symbolName) == ["figure.run", "laptopcomputer"])
+        #expect(comingUp.moreCount == 1)
     }
 
     @Test("With nothing in the next 7 days, the widget shows only the message")
@@ -79,11 +105,16 @@ struct WidgetSnapshotTests {
 
     /// Lin's 7 am run at Enmore Park, some days after Thursday.
     private func runOn(_ day: LinsThursday, daysLater: Int) throws -> PlannedActivity {
-        let start = try #require(day.calendar.date(byAdding: .day, value: daysLater, to: day.time(7)))
+        try plan(ActivityCatalogue.run, at: 7, place: day.enmorePark, on: day, daysLater: daysLater)
+    }
+
+    /// A fixed 45-minute plan of an activity, some days after Thursday.
+    private func plan(_ type: ActivityType, at hour: Int, place: Place, on day: LinsThursday, daysLater: Int) throws -> PlannedActivity {
+        let start = try #require(day.calendar.date(byAdding: .day, value: daysLater, to: day.time(hour)))
         return try PlannedActivity(
-            typeID: ActivityCatalogue.run.id, title: "Run",
+            typeID: type.id, title: type.name,
             start: start, durationMinutes: 45,
-            place: day.enmorePark, mode: .inPerson,
+            place: place, mode: .inPerson,
             flexibility: .fixed
         )
     }
