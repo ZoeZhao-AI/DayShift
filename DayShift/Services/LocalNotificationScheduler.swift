@@ -8,15 +8,6 @@ import UserNotifications
 /// Content Extension shows them; the payload in `userInfo` carries
 /// everything the extension needs.
 final class LocalNotificationScheduler: NotificationScheduling {
-    static let categoryIdentifier = "upcomingPlan"
-
-    /// The category's actions (6.3). The extension shows only "Got it" for a leave reminder.
-    enum Action: String {
-        case seeOptions
-        case keepPlan
-        case gotIt
-    }
-
     private static let logger = Logger(subsystem: "com.utsstudent.zhaoziying.DayShift", category: "Notifications")
 
     private let center: UNUserNotificationCenter
@@ -43,17 +34,19 @@ final class LocalNotificationScheduler: NotificationScheduling {
     }
 
     /// Registers `upcomingPlan` with its actions; call once at launch.
+    /// The extension shows only "Got it" for a leave reminder.
     static func registerCategory(on center: UNUserNotificationCenter = .current()) {
-        let seeOptions = UNNotificationAction(identifier: Action.seeOptions.rawValue, title: "See options", options: [.foreground])
-        let keepPlan = UNNotificationAction(identifier: Action.keepPlan.rawValue, title: "Keep my plan", options: [])
-        let gotIt = UNNotificationAction(identifier: Action.gotIt.rawValue, title: "Got it", options: [])
         let category = UNNotificationCategory(
-            identifier: categoryIdentifier,
-            actions: [seeOptions, keepPlan, gotIt],
+            identifier: NotificationIdentifier.category,
+            actions: NotificationAction.allCases.map(Self.unAction),
             intentIdentifiers: [],
             options: [.customDismissAction]
         )
         center.setNotificationCategories([category])
+    }
+
+    nonisolated static func unAction(_ action: NotificationAction) -> UNNotificationAction {
+        UNNotificationAction(identifier: action.rawValue, title: action.title, options: action.opensApp ? [.foreground] : [])
     }
 
     // MARK: - NotificationScheduling
@@ -81,7 +74,7 @@ final class LocalNotificationScheduler: NotificationScheduling {
         content.title = "Leave in \(reminderMinutes) min for \(reminder.planTitle)"
         content.body = "\(reminder.placeName) · \(reminder.travel.text). Press and hold for details."
         content.sound = .default
-        content.categoryIdentifier = Self.categoryIdentifier
+        content.categoryIdentifier = NotificationIdentifier.category
         content.threadIdentifier = reminder.planID.uuidString
         content.userInfo = try payload.userInfo()
 
@@ -121,7 +114,7 @@ final class LocalNotificationScheduler: NotificationScheduling {
         content.body = "\(Self.firstSentence(of: alert.reason)) "
             + (topOption == nil ? "Press and hold for details." : "Press and hold to see a better option.")
         content.sound = .default
-        content.categoryIdentifier = Self.categoryIdentifier
+        content.categoryIdentifier = NotificationIdentifier.category
         content.threadIdentifier = alert.planID.uuidString
         content.userInfo = try payload.userInfo()
 

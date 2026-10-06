@@ -46,18 +46,17 @@ final class NotificationViewController: UIViewController, UNNotificationContentE
         }
     }
 
+    private static func unAction(_ action: NotificationAction) -> UNNotificationAction {
+        UNNotificationAction(identifier: action.rawValue, title: action.title, options: action.opensApp ? [.foreground] : [])
+    }
+
     /// A: "Got it" only. B: "See options" and "Keep my plan" (6.3).
     private func setActions(for situation: NotificationPayload.Situation?) {
         switch situation {
         case .leaveReminder:
-            extensionContext?.notificationActions = [
-                UNNotificationAction(identifier: "gotIt", title: "Got it", options: [])
-            ]
+            extensionContext?.notificationActions = [Self.unAction(.gotIt)]
         case .planAffected:
-            extensionContext?.notificationActions = [
-                UNNotificationAction(identifier: "seeOptions", title: "See options", options: [.foreground]),
-                UNNotificationAction(identifier: "keepPlan", title: "Keep my plan", options: [])
-            ]
+            extensionContext?.notificationActions = [Self.unAction(.seeOptions), Self.unAction(.keepPlan)]
         case nil:
             break
         }

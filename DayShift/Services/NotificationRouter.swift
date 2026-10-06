@@ -41,7 +41,7 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
         switch response.actionIdentifier {
         case UNNotificationDefaultActionIdentifier:
             link = .plan(planID)
-        case LocalNotificationScheduler.Action.seeOptions.rawValue:
+        case NotificationAction.seeOptions.rawValue:
             link = .options(planID)
         default:
             link = nil
