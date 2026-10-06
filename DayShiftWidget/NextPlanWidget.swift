@@ -17,15 +17,6 @@ struct NextPlanWidget: Widget {
     }
 }
 
-/// Deep links the app opens (Section 7.2).
-enum DeepLink {
-    static let today = URL(string: "dayshift://today")!
-
-    static func plan(_ id: UUID) -> URL {
-        URL(string: "dayshift://plan/\(id.uuidString)")!
-    }
-}
-
 // MARK: - Views
 
 struct NextPlanWidgetView: View {
@@ -39,11 +30,11 @@ struct NextPlanWidgetView: View {
                 MediumPlansView(next: next, following: following)
             } else {
                 SmallPlanView(line: next)
-                    .widgetURL(DeepLink.plan(next.planID))
+                    .widgetURL(DeepLink.plan(next.planID).url)
             }
         case let .message(title, detail):
             MessageView(title: title, detail: detail)
-                .widgetURL(DeepLink.today)
+                .widgetURL(DeepLink.today.url)
         }
     }
 }
@@ -84,7 +75,7 @@ private struct MediumPlansView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Link(destination: DeepLink.plan(next.planID)) {
+            Link(destination: DeepLink.plan(next.planID).url) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Next · \(next.timeText) · \(next.placeText)")
                         .font(.caption)
@@ -111,7 +102,7 @@ private struct MediumPlansView: View {
             if !following.isEmpty {
                 Divider()
                 ForEach(following, id: \.planID) { line in
-                    Link(destination: DeepLink.plan(line.planID)) {
+                    Link(destination: DeepLink.plan(line.planID).url) {
                         HStack(spacing: 6) {
                             Text(line.timeText)
                                 .font(.caption.monospacedDigit())
