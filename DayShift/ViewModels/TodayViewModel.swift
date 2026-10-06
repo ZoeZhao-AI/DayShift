@@ -45,6 +45,10 @@ final class TodayViewModel {
     /// after saving a plan for another day, or "Your run is now at 5:30 pm."
     private(set) var toast: String?
     private var plansByID: [UUID: PlannedActivity] = [:]
+    /// A plan a link asked for, waiting for Today's plans to load.
+    private var requestedPlanID: UUID?
+    /// The plan Today should open now; TodayView clears it with `planOpened()`.
+    private(set) var planToOpen: PlannedActivity?
 
     private let checkUpcomingPlans: CheckUpcomingPlansUseCase
     private let activities: ActivityRepository
@@ -169,6 +173,35 @@ final class TodayViewModel {
 
     func dismissToast() {
         toast = nil
+    }
+
+    /// dayshift://today and dayshift://plan/<id> (7.2). A plan opens once it is
+    /// loaded; one that no longer exists shows why instead.
+    func open(_ link: DeepLink) async {
+        switch link {
+        case .today, .options:
+            // Options links come with notifications in Step 9; until then they open Today.
+            requestedPlanID = nil
+            await refresh()
+        case let .plan(id):
+            requestedPlanID = id
+            await refresh()
+            openRequestedPlan()
+        }
+    }
+
+    func planOpened() {
+        planToOpen = nil
+    }
+
+    private func openRequestedPlan() {
+        guard let id = requestedPlanID, hasLoaded else { return }
+        requestedPlanID = nil
+        if let plan = plansByID[id] {
+            planToOpen = plan
+        } else {
+            problemBanner = ErrorMessage(PersistenceError.planNotFound)
+        }
     }
 
     /// The plan behind a row, to open Plan Detail.
