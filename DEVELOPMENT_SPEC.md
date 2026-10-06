@@ -359,6 +359,13 @@ Errors (`SavePlaceError`):
   "Use a different name, or edit the existing place."
 - `addressNotFound` — "DayShift couldn't find that address." /
   "Check the spelling, or add the suburb and postcode."
+- `nameIsEmpty` — "This place needs a name." / "Enter a name, such as Home or Newtown Library."
+- `outdoorPlaceCannotBeCooled` — "An outdoor place can't be air-conditioned." /
+  "Turn off Air-conditioned, or mark the place as indoor."
+- `heatLimitOutOfRange` — "The temperature needs to be between 20°C and 45°C." /
+  "Choose a temperature in this range."
+Input: a `PlaceDraft` (the editor's fields). An edited place whose address hasn't
+changed keeps its coordinates without a new lookup.
 
 ---
 
@@ -718,6 +725,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 5 Oct 2026 | A plan that looks good gets up to three valid options even if none beats it (3.3) | With "only higher-scoring options", a plan that looks good would usually get none; "Find other options" must always show the primary use case for a flexible plan |
 | 6 Oct 2026 | After the last plan of the day, the widget timeline reloads at the start of tomorrow instead of `.atEnd` (6.2) | With no plan left, the timeline has a single entry, and `.atEnd` would make WidgetKit ask again straight away, over and over; the app still reloads the widget whenever a plan changes |
 | 6 Oct 2026 | The widget's empty and all-done states also show the next plan within 7 days (6.2) | As on Today's "Coming up", Lin can see her next plan from the Home Screen even when today has nothing left |
+| 6 Oct 2026 | `SavePlaceError` also covers an empty name, an air-conditioned outdoor place and a heat limit out of range (3.6) | These come from Place's own rules (2.1); the editor needs them in Lin's words, with what to do next |
 
 ---
 
