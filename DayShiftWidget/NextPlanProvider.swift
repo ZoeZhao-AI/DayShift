@@ -46,8 +46,10 @@ struct NextPlanProvider: TimelineProvider {
         }
         Task {
             let now = Date()
-            let (plans, checks) = await savedPlans(on: now)
-            completion(NextPlanEntry(date: now, snapshot: WidgetSnapshot(plans: plans, checks: checks, now: now, calendar: .current)))
+            let (plans, upcoming, checks) = await savedPlans(on: now, calendar: .current)
+            completion(NextPlanEntry(date: now, snapshot: WidgetSnapshot(
+                plans: plans, upcoming: upcoming, checks: checks, now: now, calendar: .current
+            )))
         }
     }
 
@@ -55,10 +57,12 @@ struct NextPlanProvider: TimelineProvider {
         Task {
             let now = Date()
             let calendar = Calendar.current
-            let (plans, checks) = await savedPlans(on: now)
+            let (plans, upcoming, checks) = await savedPlans(on: now, calendar: calendar)
             let dates = WidgetSnapshot.timelineDates(plans: plans, now: now)
             let entries = dates.map { date in
-                NextPlanEntry(date: date, snapshot: WidgetSnapshot(plans: plans, checks: checks, now: date, calendar: calendar))
+                NextPlanEntry(date: date, snapshot: WidgetSnapshot(
+                    plans: plans, upcoming: upcoming, checks: checks, now: date, calendar: calendar
+                ))
             }
             completion(Timeline(entries: entries, policy: Self.policy(for: dates, now: now, calendar: calendar)))
         }
@@ -73,19 +77,26 @@ struct NextPlanProvider: TimelineProvider {
         return tomorrow.map { .after($0) } ?? .atEnd
     }
 
-    /// Today's plans and checks, or none if the shared store can't be read.
-    private func savedPlans(on day: Date) async -> ([PlannedActivity], [UUID: PlanCheck]) {
+    /// Today's plans and checks, and the plans for the next 7 days (not
+    /// checked yet), or none if the shared store can't be read.
+    private func savedPlans(on day: Date, calendar: Calendar) async -> ([PlannedActivity], [PlannedActivity], [UUID: PlanCheck]) {
         do {
-            let repository = CoreDataActivityRepository(stack: try CoreDataStack())
+            let repository = CoreDataActivityRepository(stack: try CoreDataStack(), calendar: calendar)
             let plans = try await repository.plans(on: day)
             var checks: [UUID: PlanCheck] = [:]
             for plan in plans {
                 checks[plan.id] = try? await repository.check(for: plan.id)
             }
-            return (plans, checks)
+            var upcoming: [PlannedActivity] = []
+            let today = calendar.startOfDay(for: day)
+            for offset in 1...WidgetSnapshot.comingUpDays {
+                guard let laterDay = calendar.date(byAdding: .day, value: offset, to: today) else { continue }
+                upcoming += try await repository.plans(on: laterDay)
+            }
+            return (plans, upcoming, checks)
         } catch {
-            Self.logger.error("Couldn't read today's plans: \(String(describing: error), privacy: .public)")
-            return ([], [:])
+            Self.logger.error("Couldn't read the saved plans: \(String(describing: error), privacy: .public)")
+            return ([], [], [:])
         }
     }
 }

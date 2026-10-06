@@ -33,8 +33,11 @@ struct NextPlanWidgetView: View {
                     .widgetURL(DeepLink.plan(next.planID).url)
             }
         case let .message(title, detail):
-            MessageView(title: title, detail: detail)
-                .widgetURL(DeepLink.today.url)
+            // Small has one tap target: the coming-up plan if there is one.
+            MessageView(title: title, detail: detail, comingUp: entry.snapshot.comingUp, isMedium: family == .systemMedium)
+                .widgetURL(family == .systemSmall
+                    ? (entry.snapshot.comingUp.map { DeepLink.plan($0.planID).url } ?? DeepLink.today.url)
+                    : DeepLink.today.url)
         }
     }
 }
@@ -125,10 +128,13 @@ private struct MediumPlansView: View {
     }
 }
 
-/// "Your day is clear." / "That's everything for today."
+/// "Your day is clear." / "That's everything for today.", and below it the
+/// next plan coming up, without a status (6.2).
 private struct MessageView: View {
     let title: String
     let detail: String?
+    let comingUp: WidgetSnapshot.ComingUpLine?
+    let isMedium: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -138,6 +144,26 @@ private struct MessageView: View {
                 Text(detail)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+            if let comingUp {
+                Spacer(minLength: 4)
+                if isMedium {
+                    Link(destination: DeepLink.plan(comingUp.planID).url) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Coming up · \(comingUp.dayText)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text("\(comingUp.timeText) \(comingUp.title) · \(comingUp.placeText)")
+                                .font(.subheadline)
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                } else {
+                    Text("\(comingUp.dayText) \(comingUp.timeText) · \(comingUp.title)")
+                        .font(.caption)
+                        .lineLimit(2)
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -169,4 +195,10 @@ private struct WidgetStatusLabel: View {
     NextPlanWidget()
 } timeline: {
     NextPlanEntry.placeholder
+    NextPlanEntry(date: .now, snapshot: WidgetSnapshot(
+        content: .message(title: "That's everything for today.", detail: nil),
+        comingUp: WidgetSnapshot.ComingUpLine(
+            planID: UUID(), title: "Run", dayText: "Tomorrow", timeText: "7:00 am", placeText: "Enmore Park"
+        )
+    ))
 }
