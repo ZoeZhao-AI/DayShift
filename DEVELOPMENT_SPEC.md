@@ -350,6 +350,8 @@ Errors (`UpdateComfortPreferencesError`):
   "Enter a value in this range."
 - `planningHoursInvalid` — "Your earliest planning time needs to be before your latest." /
   "Adjust one of the times."
+`valueOutOfRange` carries the `ComfortPreferences.Field`; its name and range in the
+message come from 2.7's ranges. Input: a `ComfortPreferencesDraft` (the editors' values).
 
 ### 3.6 SavePlaceUseCase
 Rules: unique name; address must resolve to coordinates (via PlaceGeocoding);
@@ -726,6 +728,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 6 Oct 2026 | After the last plan of the day, the widget timeline reloads at the start of tomorrow instead of `.atEnd` (6.2) | With no plan left, the timeline has a single entry, and `.atEnd` would make WidgetKit ask again straight away, over and over; the app still reloads the widget whenever a plan changes |
 | 6 Oct 2026 | The widget's empty and all-done states also show the next plan within 7 days (6.2) | As on Today's "Coming up", Lin can see her next plan from the Home Screen even when today has nothing left |
 | 6 Oct 2026 | `SavePlaceError` also covers an empty name, an air-conditioned outdoor place and a heat limit out of range (3.6) | These come from Place's own rules (2.1); the editor needs them in Lin's words, with what to do next |
+| 6 Oct 2026 | `UpdateComfortPreferencesError.valueOutOfRange` carries the field instead of a name and range (3.5) | The name and range in the message are derived from 2.7's ranges in one place, so they can't drift from the checks |
 
 ---
 
