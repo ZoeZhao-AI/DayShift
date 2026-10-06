@@ -1,7 +1,8 @@
 import Foundation
 
 /// How long it takes to get to a plan.
-public struct TravelEstimate: Hashable, Sendable {
+/// Codable for notification payloads; `isEstimate` is always true, so it isn't stored.
+public struct TravelEstimate: Codable, Hashable, Sendable {
     public let minutes: Int
     public let mode: TravelMode
 
