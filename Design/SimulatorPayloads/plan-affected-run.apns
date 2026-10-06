@@ -1,0 +1,12 @@
+{
+  "aps" : {
+    "alert" : {
+      "body" : "Smoke until 10 am. Press and hold to see a better option.",
+      "title" : "Your 7:00 am run is affected"
+    },
+    "category" : "upcomingPlan",
+    "sound" : "default"
+  },
+  "dayshiftPayload" : "{\"planStart\":813096000,\"topOption\":{\"explanation\":\"Air quality returns to Good and UV is low.\",\"title\":\"Move to 5:30 pm · Enmore Park\",\"scheduleNote\":\"Grocery run moves from 5:30 to 6:30 pm. Your 11 am client call is not affected.\"},\"placeName\":\"Enmore Park\",\"situation\":\"planAffected\",\"findings\":[{\"severity\":\"problem\",\"message\":\"Smoke until 10 am. Air quality Poor, above your limit (Fair).\",\"factor\":\"conditions\"},{\"factor\":\"travel\",\"severity\":\"fine\",\"message\":\"5 min walk · estimate · Leave by 6:55 am\"},{\"factor\":\"openingHours\",\"severity\":\"fine\",\"message\":\"Open 24 hours.\"},{\"factor\":\"crowds\",\"severity\":\"fine\",\"message\":\"Usually moderately busy · estimate\"}],\"chart\":{\"points\":[{\"time\":813092400,\"value\":60},{\"time\":813096000,\"value\":60},{\"time\":813099600,\"value\":60},{\"time\":813103200,\"value\":60},{\"time\":813106800,\"value\":12},{\"time\":813110400,\"value\":12}],\"limit\":50,\"conditionName\":\"Air quality\",\"valueName\":\"PM2.5 (µg\\\/m³)\",\"limitLabel\":\"Your limit (Fair)\"},\"planID\":\"6F1C2A3B-0000-4000-8000-000000000007\",\"planTitle\":\"Run\"}",
+  "Simulator Target Bundle" : "com.utsstudent.zhaoziying.DayShift"
+}

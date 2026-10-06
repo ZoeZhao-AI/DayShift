@@ -279,11 +279,7 @@ struct PlanAssessor {
 
     /// e.g. "5 min walk", "12 min by public transport".
     static func travelText(_ travel: TravelEstimate) -> String {
-        switch travel.mode {
-        case .walking: return "\(travel.minutes) min walk"
-        case .publicTransport: return "\(travel.minutes) min by public transport"
-        case .driving: return "\(travel.minutes) min drive"
-        }
+        travel.text
     }
 
     private func openingHoursFinding(_ plan: PlannedActivity, place: Place) throws -> Assessed {

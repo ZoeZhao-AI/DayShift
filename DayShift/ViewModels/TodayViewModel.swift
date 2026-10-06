@@ -47,8 +47,15 @@ final class TodayViewModel {
     private var plansByID: [UUID: PlannedActivity] = [:]
     /// A plan a link asked for, waiting for Today's plans to load.
     private var requestedPlanID: UUID?
+    /// Whether that link asked for the plan's options rather than its details.
+    private var requestedOptions = false
     /// The plan Today should open now; TodayView clears it with `planOpened()`.
     private(set) var planToOpen: PlannedActivity?
+    /// Whether `planToOpen` should show its Options screen (dayshift://options/<id>).
+    private(set) var opensOptions = false
+
+    /// Set once the explanation sheet has been shown, so it shows only once.
+    private static let alertsExplainedKey = "alertsExplained"
 
     private let checkUpcomingPlans: CheckUpcomingPlansUseCase
     private let activities: ActivityRepository
@@ -179,12 +186,17 @@ final class TodayViewModel {
     /// loaded; one that no longer exists shows why instead.
     func open(_ link: DeepLink) async {
         switch link {
-        case .today, .options:
-            // Options links come with notifications in Step 9; until then they open Today.
+        case .today:
             requestedPlanID = nil
             await refresh()
         case let .plan(id):
             requestedPlanID = id
+            requestedOptions = false
+            await refresh()
+            openRequestedPlan()
+        case let .options(id):
+            requestedPlanID = id
+            requestedOptions = true
             await refresh()
             openRequestedPlan()
         }
@@ -192,12 +204,33 @@ final class TodayViewModel {
 
     func planOpened() {
         planToOpen = nil
+        opensOptions = false
+    }
+
+    /// True the first time a plan is saved, while iOS hasn't asked yet (6.3).
+    func shouldExplainAlerts() async -> Bool {
+        let defaults = UserDefaults.standard
+        guard !defaults.bool(forKey: Self.alertsExplainedKey) else { return false }
+        return await alertsStatus.hasNotBeenAsked()
+    }
+
+    /// "Allow alerts": shows the system prompt, then updates the banner.
+    func allowAlerts() async {
+        UserDefaults.standard.set(true, forKey: Self.alertsExplainedKey)
+        _ = await alertsStatus.askForPermission()
+        alertsAreOff = await alertsStatus.alertsAreOff()
+    }
+
+    /// "Not now": don't ask again; Lin can turn alerts on in Settings.
+    func declineAlertsForNow() {
+        UserDefaults.standard.set(true, forKey: Self.alertsExplainedKey)
     }
 
     private func openRequestedPlan() {
         guard let id = requestedPlanID, hasLoaded else { return }
         requestedPlanID = nil
         if let plan = plansByID[id] {
+            opensOptions = requestedOptions
             planToOpen = plan
         } else {
             problemBanner = ErrorMessage(PersistenceError.planNotFound)

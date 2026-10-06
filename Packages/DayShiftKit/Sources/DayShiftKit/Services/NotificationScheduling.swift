@@ -13,8 +13,35 @@ public protocol NotificationScheduling {
     func removeNotifications(forPlan planID: UUID) async
 }
 
+/// The `upcomingPlan` category's actions (6.3), shared by the app and the
+/// Notification Content Extension. Plain strings: DayShiftKit doesn't import
+/// UserNotifications (1.3).
+public enum NotificationAction: String, CaseIterable, Sendable {
+    /// Opens the app at the plan's options.
+    case seeOptions
+    case keepPlan
+    /// Leave reminders only.
+    case gotIt
+
+    public var title: String {
+        switch self {
+        case .seeOptions: return "See options"
+        case .keepPlan: return "Keep my plan"
+        case .gotIt: return "Got it"
+        }
+    }
+
+    /// Whether choosing it opens DayShift.
+    public var opensApp: Bool {
+        self == .seeOptions
+    }
+}
+
 /// Identifiers from Section 6.3, so a plan's notifications can be replaced or removed.
 public enum NotificationIdentifier {
+    /// The category both situations use; the content extension is registered for it.
+    public static let category = "upcomingPlan"
+
     public static func leaveReminder(planID: UUID) -> String {
         "leave-\(planID.uuidString)"
     }

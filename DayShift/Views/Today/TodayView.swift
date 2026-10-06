@@ -8,6 +8,9 @@ import UIKit
 struct TodayView: View {
     @State private var viewModel: TodayViewModel
     @State private var planEditor: PlanEditorViewModel?
+    @State private var savedFromEditor = false
+    @State private var isExplainingAlerts = false
+    private let notificationRouter: NotificationRouter
     @State private var path = NavigationPath()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
@@ -17,11 +20,13 @@ struct TodayView: View {
 
     init(
         viewModel: TodayViewModel,
+        notificationRouter: NotificationRouter,
         makePlanEditor: @escaping (PlannedActivity?) -> PlanEditorViewModel,
         makePlanDetail: @escaping (PlannedActivity) -> PlanDetailViewModel,
         makeOptions: @escaping (PlannedActivity) -> OptionsViewModel
     ) {
         _viewModel = State(initialValue: viewModel)
+        self.notificationRouter = notificationRouter
         self.makePlanEditor = makePlanEditor
         self.makePlanDetail = makePlanDetail
         self.makeOptions = makeOptions
@@ -141,10 +146,23 @@ struct TodayView: View {
                     Task { await viewModel.optionWasUsed(toast: toast) }
                 }
             }
-            .sheet(item: $planEditor) { editor in
+            .sheet(item: $planEditor, onDismiss: explainAlertsAfterFirstSave) { editor in
                 PlanEditorView(viewModel: editor) {
+                    savedFromEditor = true
                     Task { await viewModel.planWasSaved(editor.savedPlan) }
                 }
+            }
+            .sheet(isPresented: $isExplainingAlerts) {
+                AlertsExplanationView(
+                    onAllow: {
+                        isExplainingAlerts = false
+                        Task { await viewModel.allowAlerts() }
+                    },
+                    onNotNow: {
+                        isExplainingAlerts = false
+                        viewModel.declineAlertsForNow()
+                    }
+                )
             }
             .overlay(alignment: .bottom) {
                 if let toast = viewModel.toast {
@@ -171,7 +189,17 @@ struct TodayView: View {
             guard let plan else { return }
             path = NavigationPath()
             path.append(makePlanDetail(plan))
+            if viewModel.opensOptions {
+                path.append(makeOptions(plan))
+            }
             viewModel.planOpened()
+        }
+        .onChange(of: notificationRouter.pendingLink, initial: true) { _, link in
+            guard let link else { return }
+            notificationRouter.linkOpened()
+            planEditor = nil
+            path = NavigationPath()
+            Task { await viewModel.open(link) }
         }
         .onChange(of: scenePhase, initial: true) { _, phase in
             if phase == .active {
@@ -182,6 +210,17 @@ struct TodayView: View {
 }
 
 extension TodayView {
+    /// After the first plan is saved, explain alerts before iOS asks (6.3).
+    private func explainAlertsAfterFirstSave() {
+        guard savedFromEditor else { return }
+        savedFromEditor = false
+        Task {
+            if await viewModel.shouldExplainAlerts() {
+                isExplainingAlerts = true
+            }
+        }
+    }
+
     /// A plan row that opens Plan Detail.
     private func planButton(for row: TodayViewModel.PlanRow) -> some View {
         Button {
@@ -258,6 +297,7 @@ private struct PlanRowView: View {
     if let dependencies = try? AppDependencies() {
         TodayView(
             viewModel: dependencies.today,
+            notificationRouter: dependencies.notificationRouter,
             makePlanEditor: { dependencies.makePlanEditor(editing: $0) },
             makePlanDetail: { dependencies.makePlanDetail(for: $0) },
             makeOptions: { dependencies.makeOptions(for: $0) }

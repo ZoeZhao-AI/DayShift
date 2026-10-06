@@ -85,7 +85,7 @@ final class OptionsViewModel {
             options = suggestions.options.enumerated().map { index, option in
                 OptionCard(
                     id: option.id,
-                    title: cardTitle(for: option),
+                    title: option.title(for: plan, calendar: calendar),
                     explanation: option.explanation,
                     scheduleNote: option.scheduleNote,
                     isRecommended: index == 0 && status == .needsAttention,
@@ -145,16 +145,6 @@ final class OptionsViewModel {
         }
     }
 
-    /// "Move to 5:30 pm · Enmore Park" or "Move to Newtown Library · 1:00 to 5:00 pm".
-    private func cardTitle(for option: AlternativePlan) -> String {
-        switch option.adjustment {
-        case let .shiftTime(newStart):
-            return "Move to \(TimeText.time(newStart, calendar: calendar)) · \(plan.place?.name ?? "Online")"
-        case let .changePlace(place):
-            let times = TimeText.range(plan.start, plan.end, calendar: calendar).replacingOccurrences(of: "–", with: " to ")
-            return "Move to \(place.name) · \(times)"
-        }
-    }
 }
 
 /// Lets Plan Detail push Options as navigation state.

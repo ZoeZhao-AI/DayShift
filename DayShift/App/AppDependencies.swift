@@ -13,6 +13,8 @@ final class AppDependencies {
     let suggestAlternatives: SuggestAlternativesUseCase
     let acceptAlternative: AcceptAlternativeUseCase
     let today: TodayViewModel
+    /// Kept here because the notification centre holds its delegate weakly.
+    let notificationRouter = NotificationRouter()
     private let conditions: ConditionsService
     private let widget: WidgetRefreshing
     private let notifications: NotificationScheduling
@@ -27,8 +29,24 @@ final class AppDependencies {
         let preferences = CoreDataPreferencesRepository(stack: stack)
         let travelTimes = StraightLineTravelTimeService()
         let widget = WidgetCenterRefresher()
-        let notifications = PlaceholderNotificationScheduler()
         let conditions = OpenMeteoConditionsService()
+        let suggestAlternatives = SuggestAlternativesUseCase(
+            activities: activities,
+            places: places,
+            preferences: preferences,
+            conditions: conditions,
+            travelTimes: travelTimes,
+            calendar: calendar
+        )
+        LocalNotificationScheduler.registerCategory()
+        notificationRouter.becomeDelegate()
+        let notifications = LocalNotificationScheduler(
+            activities: activities,
+            preferences: preferences,
+            conditions: conditions,
+            suggestAlternatives: suggestAlternatives,
+            calendar: calendar
+        )
 
         let checkUpcomingPlans = CheckUpcomingPlansUseCase(
             activities: activities,
@@ -51,14 +69,6 @@ final class AppDependencies {
             calendar: calendar
         )
 
-        let suggestAlternatives = SuggestAlternativesUseCase(
-            activities: activities,
-            places: places,
-            preferences: preferences,
-            conditions: conditions,
-            travelTimes: travelTimes,
-            calendar: calendar
-        )
         let acceptAlternative = AcceptAlternativeUseCase(
             activities: activities,
             places: places,

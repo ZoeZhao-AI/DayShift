@@ -178,93 +178,30 @@ final class PlanDetailViewModel {
     // MARK: Chart
 
     /// A chart only when a condition at the place is a problem. A trip-only
-    /// problem, or no forecast, shows no chart.
+    /// problem, or no forecast, shows no chart. The chart itself comes from
+    /// DayShiftKit, shared with plan-affected notifications.
     private func makeChart(for check: PlanCheck?) async -> ConditionChart? {
+        // Only ask for the forecast when there is a problem to chart.
         guard let check, let place = plan.place,
-              check.findings.contains(where: { $0.factor == .conditions && $0.severity == .problem })
-        else { return nil }
-        guard let forecast = try? await conditions.forecast(for: [place.coordinate], on: plan.start)[place.coordinate]
+              check.findings.contains(where: { $0.factor == .conditions && $0.severity == .problem }),
+              let forecast = try? await conditions.forecast(for: [place.coordinate], on: plan.start)[place.coordinate]
         else { return nil }
         let preferences = (try? await self.preferences.load()) ?? .default
+        guard let data = ConditionChartData.problemChart(
+            for: plan, check: check, forecast: forecast, preferences: preferences, calendar: calendar
+        ) else { return nil }
 
-        let range = chartRange()
-        let hours = forecast.hours.filter { $0.time >= range.start && $0.time < range.end }
-        guard !hours.isEmpty else { return nil }
-        let shownNow = range.contains(now) ? now : nil
-
-        if place.isIndoor {
-            guard !place.isCooled, let limit = place.uncooledHeatLimitC else { return nil }
-            return ConditionChart(
-                valueName: "Outside (°C)",
-                points: hours.map { ChartPoint(time: $0.time, value: $0.temperatureC) },
-                limit: limit,
-                limitLabel: "Too hot above \(Int(limit.rounded()))°C",
-                caption: "Temperature outside \(place.name) · shaded where it's above your limit",
-                now: shownNow
-            )
-        }
-
-        let planHours = forecast.conditions(during: plan.interval)
-        let sensitivities = ActivityCatalogue.type(withID: plan.typeID)?.sensitivities
-            ?? Set(ConditionSensitivity.allCases)
-        for sensitivity in ConditionSensitivity.allCases where sensitivities.contains(sensitivity) {
-            guard let measure = Self.measure(sensitivity, preferences: preferences),
-                  planHours.contains(where: { measure.value($0) > measure.limit })
-            else { continue }
-            return ConditionChart(
-                valueName: measure.valueName,
-                points: hours.map { ChartPoint(time: $0.time, value: measure.value($0)) },
-                limit: measure.limit,
-                limitLabel: measure.limitLabel,
-                caption: "\(measure.name) at \(place.name) · shaded where it's worse than your limit",
-                now: shownNow
-            )
-        }
-        return nil
-    }
-
-    /// From an hour before the plan to an hour after it, at least 6 hours wide,
-    /// so it shows when the problem ends.
-    private func chartRange() -> DateInterval {
-        let hourStart = calendar.dateInterval(of: .hour, for: plan.start)?.start ?? plan.start
-        let start = hourStart.addingTimeInterval(-3600)
-        let end = max(plan.end.addingTimeInterval(3600), start.addingTimeInterval(6 * 3600))
-        return DateInterval(start: start, end: end)
-    }
-
-    private struct Measure {
-        let name: String
-        let valueName: String
-        let limit: Double
-        let limitLabel: String
-        let value: (HourlyConditions) -> Double
-    }
-
-    private static func measure(_ sensitivity: ConditionSensitivity, preferences: ComfortPreferences) -> Measure? {
-        switch sensitivity {
-        case .heat:
-            let limit = preferences.maxApparentTemperatureC
-            return Measure(name: "Feels-like temperature", valueName: "Feels like (°C)", limit: limit,
-                           limitLabel: "Your limit \(Int(limit.rounded()))°C", value: \.apparentTemperatureC)
-        case .poorAirQuality:
-            let category = preferences.worstAcceptableAirQuality
-            guard let limit = category.pm25UpperBound else { return nil }
-            return Measure(name: "Air quality", valueName: "PM2.5 (µg/m³)", limit: limit,
-                           limitLabel: "Your limit (\(category.name))", value: \.pm25)
-        case .uv:
-            let limit = preferences.maxUVIndex
-            return Measure(name: "UV", valueName: "UV index", limit: limit,
-                           limitLabel: "Your limit \(Int(limit.rounded()))", value: \.uvIndex)
-        case .wind:
-            let limit = preferences.maxWindGustsKmh
-            return Measure(name: "Wind gusts", valueName: "Gusts (km/h)", limit: limit,
-                           limitLabel: "Your limit \(Int(limit.rounded())) km/h", value: \.windGustsKmh)
-        case .rain:
-            let limit = Double(preferences.maxRainProbability)
-            return Measure(name: "Chance of rain", valueName: "Rain (%)", limit: limit,
-                           limitLabel: "Your limit \(preferences.maxRainProbability)%",
-                           value: { Double($0.precipitationProbability) })
-        }
+        let range = ConditionChartData.chartRange(for: plan, calendar: calendar)
+        return ConditionChart(
+            valueName: data.valueName,
+            points: data.points.map { ChartPoint(time: $0.time, value: $0.value) },
+            limit: data.limit,
+            limitLabel: data.limitLabel,
+            caption: place.isIndoor
+                ? "\(data.conditionName) \(place.name) · shaded where it's above your limit"
+                : "\(data.conditionName) at \(place.name) · shaded where it's worse than your limit",
+            now: range.contains(now) ? now : nil
+        )
     }
 }
 
