@@ -41,6 +41,53 @@ struct WidgetSnapshotTests {
         #expect(snapshot.content == .message(title: "Your day is clear.", detail: "Plan an activity in DayShift."))
     }
 
+    @Test("After the last plan, the widget also shows the next plan coming up")
+    func afterLastPlanShowsNextPlanComingUp() throws {
+        let day = try LinsThursday()
+        let fridayRun = try runOn(day, daysLater: 1)
+
+        // 6:30 pm Thursday: today is done, and Friday's 7 am run is next.
+        let snapshot = WidgetSnapshot(
+            plans: day.plans, upcoming: [fridayRun], checks: [:],
+            now: day.time(18, 30), calendar: day.calendar
+        )
+
+        #expect(snapshot.content == .message(title: "That's everything for today.", detail: nil))
+        #expect(snapshot.comingUp == WidgetSnapshot.ComingUpLine(
+            planID: fridayRun.id,
+            title: "Run",
+            dayText: "Tomorrow",
+            timeText: "7:00 am",
+            placeText: "Enmore Park"
+        ))
+    }
+
+    @Test("With nothing in the next 7 days, the widget shows only the message")
+    func nothingInNextSevenDaysShowsOnlyMessage() throws {
+        let day = try LinsThursday()
+        // A run 8 days later is outside "the next 7 days".
+        let laterRun = try runOn(day, daysLater: 8)
+
+        let snapshot = WidgetSnapshot(
+            plans: [], upcoming: [laterRun], checks: [:],
+            now: day.now, calendar: day.calendar
+        )
+
+        #expect(snapshot.content == .message(title: "Your day is clear.", detail: "Plan an activity in DayShift."))
+        #expect(snapshot.comingUp == nil)
+    }
+
+    /// Lin's 7 am run at Enmore Park, some days after Thursday.
+    private func runOn(_ day: LinsThursday, daysLater: Int) throws -> PlannedActivity {
+        let start = try #require(day.calendar.date(byAdding: .day, value: daysLater, to: day.time(7)))
+        return try PlannedActivity(
+            typeID: ActivityCatalogue.run.id, title: "Run",
+            start: start, durationMinutes: 45,
+            place: day.enmorePark, mode: .inPerson,
+            flexibility: .fixed
+        )
+    }
+
     @Test("The timeline has an entry at each plan's start and end")
     func timelineHasEntryAtEachStartAndEnd() throws {
         let day = try LinsThursday()
