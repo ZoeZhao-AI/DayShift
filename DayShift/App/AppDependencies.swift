@@ -12,6 +12,7 @@ final class AppDependencies {
     let planActivity: PlanActivityUseCase
     let suggestAlternatives: SuggestAlternativesUseCase
     let savePlace: SavePlaceUseCase
+    let updatePreferences: UpdateComfortPreferencesUseCase
     let acceptAlternative: AcceptAlternativeUseCase
     let today: TodayViewModel
     /// Kept here because the notification centre holds its delegate weakly.
@@ -83,6 +84,7 @@ final class AppDependencies {
         )
 
         self.savePlace = SavePlaceUseCase(places: places, geocoder: CLGeocoderPlaceGeocoder())
+        self.updatePreferences = UpdateComfortPreferencesUseCase(preferences: preferences, widget: widget)
         self.activities = activities
         self.suggestAlternatives = suggestAlternatives
         self.acceptAlternative = acceptAlternative
@@ -106,6 +108,16 @@ final class AppDependencies {
     /// A Plan Editor for a new plan, or for `plan` when editing.
     func makePlanEditor(editing plan: PlannedActivity? = nil) -> PlanEditorViewModel {
         PlanEditorViewModel(editing: plan, planActivity: planActivity, places: places, calendar: calendar)
+    }
+
+    func makeSettings() -> SettingsViewModel {
+        SettingsViewModel(
+            preferences: preferences,
+            updatePreferences: updatePreferences,
+            checkUpcomingPlans: checkUpcomingPlans,
+            alertsStatus: NotificationSettingsAlertsStatus(),
+            calendar: calendar
+        )
     }
 
     func makeMyPlaces() -> MyPlacesViewModel {
