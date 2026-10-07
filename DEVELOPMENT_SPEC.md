@@ -733,6 +733,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 6 Oct 2026 | `SavePlaceError` also covers an empty name, an air-conditioned outdoor place and a heat limit out of range (3.6) | These come from Place's own rules (2.1); the editor needs them in Lin's words, with what to do next |
 | 6 Oct 2026 | `UpdateComfortPreferencesError.valueOutOfRange` carries the field instead of a name and range (3.5) | The name and range in the message are derived from 2.7's ranges in one place, so they can't drift from the checks |
 | 6 Oct 2026 | Run, Walk and Cycling can also use outdoor places of kind Other, such as "Around home" (2.3) | Lin often runs or walks from her door, not only in a park; an indoor Other place (a friend's flat) still isn't suitable for outdoor exercise |
+| 7 Oct 2026 | Removed the temporary "Add sample places" button from Today (see 4 Oct); places are added in My Places | My Places and the Place Editor now exist, with the tab bar (7.2) |
 
 ---
 
