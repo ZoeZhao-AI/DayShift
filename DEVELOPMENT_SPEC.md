@@ -150,6 +150,9 @@ Each kind provides defaults: `defaultIsIndoor`, `defaultIsCooled`,
 - `id: String` (e.g. "run"), `name`, `symbolName`, `purpose: ActivityPurpose`
 - `sensitivities: Set<ConditionSensitivity>` (heat, poorAirQuality, uv, wind, rain)
 - `suitablePlaceKinds: Set<PlaceKind>`, `canBeOnline: Bool`
+- `suits(_ place: Place) -> Bool`: the place's kind is suitable, or the activity is
+  outdoor exercise (Run, Walk, Cycling) and the place is an outdoor place of kind
+  Other, e.g. "Around home". Indoor Other places stay unsuitable.
 - `ActivityCatalogue.all` contains: Run, Walk, Cycling, Indoor swim, Gym session,
   Focus work, Client meeting, Coffee with a friend, Picnic, Outdoor sketching,
   Gallery visit, Grocery run.
@@ -729,6 +732,7 @@ Record every change to this spec during development (commit as `docs:`).
 | 6 Oct 2026 | The widget's empty and all-done states also show the next plan within 7 days (6.2) | As on Today's "Coming up", Lin can see her next plan from the Home Screen even when today has nothing left |
 | 6 Oct 2026 | `SavePlaceError` also covers an empty name, an air-conditioned outdoor place and a heat limit out of range (3.6) | These come from Place's own rules (2.1); the editor needs them in Lin's words, with what to do next |
 | 6 Oct 2026 | `UpdateComfortPreferencesError.valueOutOfRange` carries the field instead of a name and range (3.5) | The name and range in the message are derived from 2.7's ranges in one place, so they can't drift from the checks |
+| 6 Oct 2026 | Run, Walk and Cycling can also use outdoor places of kind Other, such as "Around home" (2.3) | Lin often runs or walks from her door, not only in a park; an indoor Other place (a friend's flat) still isn't suitable for outdoor exercise |
 
 ---
 
