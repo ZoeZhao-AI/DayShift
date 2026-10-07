@@ -79,31 +79,37 @@ All three app/extension targets enable the App Group capability with the same ID
 ```
 DayShift/
 ├── DayShift/                      main app
-│   ├── App/                       DayShiftApp.swift, AppDependencies.swift
-│   ├── Views/                     one folder per screen
+│   ├── App/                       DayShiftApp.swift, AppDependencies.swift, RootView.swift (tab bar)
+│   ├── Views/                     one folder per screen, plus Shared/
 │   ├── ViewModels/
 │   └── Services/                  WidgetCenterRefresher, LocalNotificationScheduler,
-│                                  CLGeocoderPlaceGeocoder
-├── DayShiftWidget/
-├── DayShiftNotificationContent/
-├── Design/                        prototype HTML + interaction spec (reference only)
+│                                  NotificationRouter, AlertsStatus, CLGeocoderPlaceGeocoder
+├── DayShiftWidget/                NextPlanWidget, NextPlanProvider
+├── DayShiftNotificationContent/   NotificationViewController, NotificationContentView
+├── Design/                        prototype HTML + interaction spec (reference only),
+│                                  SimulatorPayloads/ (sample .apns)
 └── Packages/DayShiftKit/
     ├── Sources/DayShiftKit/
     │   ├── Domain/
-    │   ├── UseCases/
+    │   ├── UseCases/              the six use cases, PlanChecking, PlanAssessor, ScheduleFit
     │   ├── Repositories/          protocols only
     │   ├── Persistence/           .xcdatamodeld, CoreDataStack, repository implementations,
     │   │                          ActivityQuery
     │   ├── Conditions/            ConditionsService protocol, OpenMeteoConditionsService
     │   ├── Travel/                TravelTimeService protocol, StraightLineTravelTimeService
     │   ├── Services/              WidgetRefreshing, NotificationScheduling, PlaceGeocoding protocols
-    │   └── Shared/                AppGroup.swift, Clock helpers
+    │   └── Shared/                AppGroup, TimeText, DeepLink, PlanDisplayStatus,
+    │                              WidgetSnapshot, NotificationPayload, shared chart and wording
     └── Tests/DayShiftKitTests/
         ├── Mocks/
-        ├── Fixtures/              LinsThursday.swift
+        ├── Fixtures/              LinsThursday.swift, OpenMeteoSamples.swift
         ├── DomainTests/
         ├── UseCaseTests/
-        └── QueryTests/
+        ├── QueryTests/
+        ├── ConditionsTests/
+        ├── TravelTests/
+        ├── WidgetTests/
+        └── SharedTests/
 ```
 
 ### 1.3 Dependency Rules
@@ -140,6 +146,9 @@ pool, sportsCourt, galleryOrMuseum, shoppingCentre, other.
 Each kind provides defaults: `defaultIsIndoor`, `defaultIsCooled`,
 `typicalCrowd(at: Date) -> CrowdLevel` (estimate, e.g. café busy weekdays
 12–2 pm, shopping centre busy 5–7 pm and Saturday mornings, home always quiet).
+For the Place Editor each kind also has a `name`, `symbolName`,
+`typicalOpeningHours` (pre-filled for a new place, marked "Check and edit if
+different") and `usualBusyTimes` (the `typicalCrowd` rules in words).
 
 ### 2.2 OpeningHours
 - `opensAt: Int`, `closesAt: Int` (minutes after midnight), `closedWeekdays: Set<Int>`
@@ -176,9 +185,12 @@ Invariants: title not empty; duration 5–720 minutes; online ⇔ place == nil.
 - `HourlyConditions`: `time`, `temperatureC`, `apparentTemperatureC`,
   `precipitationProbability` (0–100), `uvIndex`, `windGustsKmh`, `pm25`
 - `AirQualityCategory`: good, fair, poor, veryPoor, extremelyPoor, from hourly PM2.5.
-  Thresholds (µg/m³): good < 25, fair < 50, poor < 100, veryPoor < 300, else extremelyPoor.
-  TODO (developer): confirm these against the NSW Air Quality Categories before
-  submission and cite the source in README.
+  Thresholds (1-hour PM2.5, µg/m³): Good below 25, Fair 25–50, Poor above 50 to 100,
+  Very poor above 100 to 300, Extremely poor above 300. `pm25UpperBound` gives each
+  category's top value (Fair → 50), used for Lin's limit.
+  Source of the categories: NSW Government air quality categories,
+  https://www.environment.nsw.gov.au/topics/air/exploring-air-quality-data/air-quality-categories
+  (see the decision log, 7 Oct 2026).
 - `ConditionsForecast`: `latitude`, `longitude`, `fetchedAt`, `hours`;
   `conditions(during: DateInterval) -> [HourlyConditions]`
 
@@ -219,6 +231,7 @@ Invariants: title not empty; duration 5–720 minutes; online ⇔ place == nil.
 
 ### 2.10 TravelEstimate
 - `minutes: Int`, `mode: TravelMode`, `isEstimate: Bool` (always true in this build)
+- `text`: e.g. "5 min walk", "12 min by public transport", "8 min drive"
 
 ### 2.11 AlternativePlan
 - `id`, `planID`
@@ -227,7 +240,7 @@ Invariants: title not empty; duration 5–720 minutes; online ⇔ place == nil.
 - `score: Int` (0–100)
 - `explanation: String` — e.g. "Air quality returns to Good and UV is low."
 - `scheduleNote: String` — e.g. "Grocery run moves from 5:30 to 6:30 pm.
-  Your 11 am call is not affected."
+  Your 11 am client call is not affected." (the fixed plan's title, in lower case)
 
 ### 2.12 AdjustmentRecord
 - `id`, `planID`, `kind` (.shiftTime, .changePlace), `previousStart`, `newStart`,
@@ -284,9 +297,10 @@ For each plan:
 - Opening hours: closed during the plan → problem; unknown → tip
   ("Opening hours not confirmed.").
 - Crowds: `typicalCrowd` of the place kind, always fine or tip.
-After checking: save each PlanCheck, refresh the widget, schedule a
-plan-affected alert for each NEW problem (same plan + same reason only once),
-and keep leave reminders in sync.
+After checking: save each PlanCheck, refresh the widget (also when a later
+check fails after some were saved), schedule a plan-affected alert for each NEW
+problem (same plan + same reason only once; only for plans on the day they are
+checked), and keep leave reminders in sync.
 Errors (`CheckUpcomingPlansError`):
 - `forecastUnavailable` — "Weather and air quality aren't available right now." /
   "Your plans are still saved. DayShift will check again when you next open the app."
@@ -484,11 +498,11 @@ Families: `systemSmall`, `systemMedium`.
   two plans in one line each.
 - Empty: "Your day is clear." / "Plan an activity in DayShift."
   All done: "That's everything for today."
-  Below either message, the next plan within the next 7 days, if any:
-  "Coming up · Tomorrow" with "7:00 am Run · Enmore Park" (medium), or
-  "Tomorrow 7:00 am · Run" (small). It shows no check status, since future
-  plans aren't checked yet, and tapping it opens that plan. With nothing in
-  the next 7 days, only the message.
+  Below either message, the next day with plans within the next 7 days, if any:
+  "Coming up · Tomorrow" with up to two of that day's plans, e.g.
+  "7:00 am Run · Enmore Park", and "+N more" (medium), or "Tomorrow 7:00 am · Run"
+  (small). It shows no check status, since future plans aren't checked yet, and
+  tapping a plan opens it. With nothing in the next 7 days, only the message.
 - Timeline: an entry now and at each plan's start and end; policy `.atEnd`.
   After the last plan has ended, policy `.after` the start of tomorrow.
 - Tap: `widgetURL` dayshift://plan/<id> (small); medium uses `Link` per row.
@@ -501,16 +515,18 @@ interval or calendar triggers). Identifiers: `leave-<planID>`, `affected-<planID
 
 Situation A — Leave reminder (every in-person plan):
 - Fires `leaveReminderMinutes` before `leaveBy`.
-- Title "Leave in 10 min for Focus work"; body "Newtown Library · 12 min by bus.
-  Press and hold for details."
+- Title "Leave in 10 min for Focus work"; body "Newtown Library · 12 min by public
+  transport. Press and hold for details."
 
 Situation B — Plan affected (new problem found by 3.2):
 - Only for plans starting more than 15 minutes from now; once per reason.
 - Title "Your 7:00 am run is affected"; body "Smoke until 10 am. Press and hold to
-  see a better option."
+  see a better option." (or "Press and hold for details." when there is no option).
 
-Payload (`userInfo`): planID, situation, findings, hourly values for the chart,
-limit value, top option summary (if any). The extension needs no network.
+Payload (`userInfo`, `NotificationPayload` as one JSON string): planID, situation,
+findings, the on-the-way values with Lin's limits (A), the hourly values and limit
+for the chart (B, the same chart as Plan Detail), and the top option from
+SuggestAlternativesUseCase (B, if any). The extension needs no network.
 
 Expanded view (SwiftUI):
 - A: arrival time; "On the way" rows (feels-like, UV, rain, air quality, each with
@@ -519,10 +535,12 @@ Expanded view (SwiftUI):
 - B: reason, Swift Charts line chart of the relevant condition with a dashed limit
   line, and the top option with its schedule note.
 
-Actions:
+Actions (`NotificationAction` in DayShiftKit; the extension shows "Got it" for A,
+"See options" and "Keep my plan" for B):
 - `seeOptions` "See options" (`.foreground`) → app opens dayshift://options/<planID>
 - `keepPlan` "Keep my plan" → dismiss
 - `gotIt` "Got it" (A only) → dismiss
+Tapping the notification opens dayshift://plan/<planID>.
 
 App rules:
 - `UNUserNotificationCenterDelegate.willPresent` returns `.banner, .sound` so
@@ -555,9 +573,9 @@ Deep links: dayshift://today, dayshift://plan/<id>, dayshift://options/<id>.
 | PlanDetailRun/Focus/Grocery/Call | PlanDetailView | saved PlanCheck; delete via ActivityRepository; chart from ConditionsService |
 | OptionsRun/Focus/Grocery/None | OptionsView | SuggestAlternativesUseCase, AcceptAlternativeUseCase |
 | PlanEditor, PlanEditorError | PlanEditorView | PlanActivityUseCase |
-| MyPlaces | MyPlacesView | PlaceRepository (read) |
+| MyPlaces | MyPlacesView | PlaceRepository (read); CheckUpcomingPlansUseCase after a place is saved |
 | PlaceEditor, PlaceEditorNew | PlaceEditorView | SavePlaceUseCase (address field replaces Apple Maps search) |
-| Settings | SettingsView + simple editors | UpdateComfortPreferencesUseCase |
+| Settings | SettingsView | UpdateComfortPreferencesUseCase; CheckUpcomingPlansUseCase after saving |
 Not built: Welcome, ChooseActivities, AlertsPermission (replaced by the sheet in
 6.3), History, AddPlace search, MyActivities, CreateActivity, Lock Screen widget,
 workplace card, "Best times today".
@@ -568,7 +586,7 @@ workplace card, "Best times today".
 - Plan Detail shows four check rows: Conditions (with chart for the problem
   condition), Travel, Opening hours, Crowds.
 - "See better options" when needs attention; "Find other options" when it looks
-  good; hidden when the plan is fixed.
+  good; hidden when the plan is fixed or has started.
 - After accepting: return to Today with toast "Your run is now at 5:30 pm."
 - Estimates labelled "estimate". Unknown hours: "Opening hours not confirmed."
 - Errors: `errorDescription` bold, `recoverySuggestion` below. Form errors inline;
@@ -577,6 +595,9 @@ workplace card, "Best times today".
   grouped by day ("Tomorrow", "Tuesday 6 Oct"). Future plans are not checked
   (3.2 checks today only), so they show "Checked on the day" in grey. Tapping one
   opens Plan Detail, where it can be edited or deleted.
+- Plans that have started show "In progress", and ended plans "Done", whatever
+  their last check said; only upcoming plans show their check.
+- Links from the widget and notifications always open on the Today tab.
 - Dynamic Type supported; icons have VoiceOver labels.
 
 ---
@@ -588,7 +609,9 @@ Swift Testing, in DayShiftKit, never using the Core Data stack. `now` is fixed.
 MockActivityRepository, MockPlaceRepository, MockPreferencesRepository,
 MockConditionsService (scripted hours per place), MockTravelTimeService,
 MockPlaceGeocoding, MockWidgetRefresher (counts reloads),
-MockNotificationScheduler (records scheduled/removed IDs). Each can be set to throw.
+MockNotificationScheduler (records scheduled/removed IDs), MockPlanChecker.
+Each can be set to throw, except where the protocol doesn't throw
+(TravelTimeService, WidgetRefreshing).
 
 ### 8.2 Fixture: LinsThursday
 now Thursday 6:40 am. Plans: Run 7:00–7:45 Enmore Park (window 6:00 am–9:00 pm);
@@ -614,9 +637,12 @@ UV 9 11 am–3 pm. Default preferences.
 13. Gap between plans is the larger of buffer and travel time (boundary: exactly 15 min is enough)
 14. The checkable-plans predicate excludes started and cancelled plans (query layer)
 
-Further tests if time allows: forecast unavailable, noViableAlternative, place
-closed, save failure leaves plans unchanged, other good options for a plan that
-looks good, notified only once per reason.
+Also covered: noViableAlternative and why nothing fits, a library that closes
+too early, save failure leaves plans unchanged, other good options for a plan
+that looks good, notified only once per reason, no early alert for a later day,
+a check that fails partway still refreshes the widget, Open-Meteo decoding,
+travel estimates, the widget snapshot, deep links and notification payloads.
+Not covered: the forecast being unavailable during a check.
 
 ---
 
@@ -734,6 +760,8 @@ Record every change to this spec during development (commit as `docs:`).
 | 6 Oct 2026 | `UpdateComfortPreferencesError.valueOutOfRange` carries the field instead of a name and range (3.5) | The name and range in the message are derived from 2.7's ranges in one place, so they can't drift from the checks |
 | 6 Oct 2026 | Run, Walk and Cycling can also use outdoor places of kind Other, such as "Around home" (2.3) | Lin often runs or walks from her door, not only in a park; an indoor Other place (a friend's flat) still isn't suitable for outdoor exercise |
 | 7 Oct 2026 | Removed the temporary "Add sample places" button from Today (see 4 Oct); places are added in My Places | My Places and the Place Editor now exist, with the tab bar (7.2) |
+| 7 Oct 2026 | PM2.5 categories follow the earlier NSW 1-hour PM2.5 categories (Good below 25, Fair 25–50, Poor above 50 to 100, Very poor above 100 to 300, Extremely poor above 300 µg/m³); the 2.6 TODO is resolved (2.6) | Lin is in Sydney. The 2025 enHealth guidance and Queensland now use stricter 1-hour values (12.5 / 25 / 50 / 150 µg/m³); this build does not adopt them, and README lists this as a known limitation |
+| 7 Oct 2026 | Spec brought up to date with the app (1.2, 2.1, 2.10, 2.11, 3.2, 6.2, 6.3, 7.3, 7.4, 8.1, 8.3) | Wording and structure changed during Steps 6–10; this records the app as built before submission |
 
 ---
 
