@@ -81,7 +81,7 @@ final class PlanEditorViewModel {
     /// Lin's places that suit the chosen activity.
     var suitablePlaces: [Place] {
         guard let selectedType else { return savedPlaces }
-        return savedPlaces.filter { selectedType.suitablePlaceKinds.contains($0.kind) }
+        return savedPlaces.filter { selectedType.suits($0) }
     }
 
     var canBeOnline: Bool {
