@@ -99,7 +99,6 @@ final class AppDependencies {
         today = TodayViewModel(
             checkUpcomingPlans: checkUpcomingPlans,
             activities: activities,
-            places: places,
             alertsStatus: NotificationSettingsAlertsStatus(),
             calendar: calendar
         )
