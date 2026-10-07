@@ -184,7 +184,7 @@ public struct SuggestAlternativesUseCase {
 
         if plan.flexibility.allowsPlaceChange, let currentPlace = plan.place {
             let others = try await places.allPlaces().filter { place in
-                place.id != currentPlace.id && (activityType?.suitablePlaceKinds.contains(place.kind) ?? true)
+                place.id != currentPlace.id && (activityType?.suits(place) ?? true)
             }
             if others.isEmpty {
                 sentences.append("None of your other places suit \(activityType?.name ?? plan.title).")
@@ -317,7 +317,7 @@ public struct SuggestAlternativesUseCase {
         let heatProblem = problems.contains { $0.reasonKey == ConditionSensitivity.heat.rawValue }
         return savedPlaces.filter { place in
             guard place.id != currentPlace.id else { return false }
-            if let activityType, !activityType.suitablePlaceKinds.contains(place.kind) { return false }
+            if let activityType, !activityType.suits(place) { return false }
             if conditionProblem, !currentPlace.isIndoor, !place.isIndoor { return false }
             if heatProblem, !place.isCooled { return false }
             return true

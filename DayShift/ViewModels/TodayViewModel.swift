@@ -39,7 +39,6 @@ final class TodayViewModel {
     private(set) var footer: String?
     private(set) var problemBanner: ErrorMessage?
     private(set) var alertsAreOff = false
-    private(set) var showsAddSamplePlaces = false
     private(set) var hasLoaded = false
     /// A short confirmation at the bottom of Today, e.g. "Saved for Monday 5 Oct."
     /// after saving a plan for another day, or "Your run is now at 5:30 pm."
@@ -59,7 +58,6 @@ final class TodayViewModel {
 
     private let checkUpcomingPlans: CheckUpcomingPlansUseCase
     private let activities: ActivityRepository
-    private let places: PlaceRepository
     private let alertsStatus: AlertsStatusChecking
     private let calendar: Calendar
     private var isRefreshing = false
@@ -67,13 +65,11 @@ final class TodayViewModel {
     init(
         checkUpcomingPlans: CheckUpcomingPlansUseCase,
         activities: ActivityRepository,
-        places: PlaceRepository,
         alertsStatus: AlertsStatusChecking,
         calendar: Calendar
     ) {
         self.checkUpcomingPlans = checkUpcomingPlans
         self.activities = activities
-        self.places = places
         self.alertsStatus = alertsStatus
         self.calendar = calendar
     }
@@ -94,26 +90,7 @@ final class TodayViewModel {
         }
         await showPlans(now: now, checkError: checkError)
         alertsAreOff = await alertsStatus.alertsAreOff()
-        showsAddSamplePlaces = await hasMissingSamplePlaces()
         hasLoaded = true
-    }
-
-    /// Temporary until My Places (Step 10): saves Lin's four places that
-    /// aren't saved yet, then refreshes. A saving error is shown after the
-    /// refresh, so the refresh can't clear it.
-    func addSamplePlaces() async {
-        var saveError: Error?
-        do {
-            for place in try SamplePlaces.all() where try await places.place(named: place.name) == nil {
-                try await places.save(place)
-            }
-        } catch {
-            saveError = error
-        }
-        await refresh()
-        if let saveError {
-            problemBanner = ErrorMessage(saveError)
-        }
     }
 
     private func showPlans(now: Date, checkError: Error?) async {
@@ -265,13 +242,5 @@ final class TodayViewModel {
                 : nil,
             isMoved: plan.status == .adjusted
         )
-    }
-
-    private func hasMissingSamplePlaces() async -> Bool {
-        guard let samplePlaces = try? SamplePlaces.all() else { return false }
-        for place in samplePlaces where (try? await places.place(named: place.name)) == nil {
-            return true
-        }
-        return false
     }
 }

@@ -10,7 +10,8 @@ struct TodayView: View {
     @State private var planEditor: PlanEditorViewModel?
     @State private var savedFromEditor = false
     @State private var isExplainingAlerts = false
-    private let notificationRouter: NotificationRouter
+    /// A link from the widget or a notification, passed on by the tab bar.
+    @Binding private var incomingLink: DeepLink?
     @State private var path = NavigationPath()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
@@ -20,13 +21,13 @@ struct TodayView: View {
 
     init(
         viewModel: TodayViewModel,
-        notificationRouter: NotificationRouter,
+        incomingLink: Binding<DeepLink?>,
         makePlanEditor: @escaping (PlannedActivity?) -> PlanEditorViewModel,
         makePlanDetail: @escaping (PlannedActivity) -> PlanDetailViewModel,
         makeOptions: @escaping (PlannedActivity) -> OptionsViewModel
     ) {
         _viewModel = State(initialValue: viewModel)
-        self.notificationRouter = notificationRouter
+        _incomingLink = incomingLink
         self.makePlanEditor = makePlanEditor
         self.makePlanDetail = makePlanDetail
         self.makeOptions = makeOptions
@@ -101,16 +102,6 @@ struct TodayView: View {
                     }
                 }
 
-                if viewModel.showsAddSamplePlaces {
-                    Section {
-                        Button("Add sample places") {
-                            Task { await viewModel.addSamplePlaces() }
-                        }
-                    } footer: {
-                        Text("Temporary: saves Home, Newtown Library, Enmore Park and Marrickville Metro until My Places is built.")
-                    }
-                }
-
                 if let footer = viewModel.footer {
                     Section {
                     } footer: {
@@ -178,13 +169,6 @@ struct TodayView: View {
             .animation(.default, value: viewModel.toast)
         }
         .tint(.teal)
-        .onOpenURL { url in
-            guard let link = DeepLink(url: url) else { return }
-            // Close any sheet and go back to Today first.
-            planEditor = nil
-            path = NavigationPath()
-            Task { await viewModel.open(link) }
-        }
         .onChange(of: viewModel.planToOpen) { _, plan in
             guard let plan else { return }
             path = NavigationPath()
@@ -194,12 +178,17 @@ struct TodayView: View {
             }
             viewModel.planOpened()
         }
-        .onChange(of: notificationRouter.pendingLink, initial: true) { _, link in
+        .onChange(of: incomingLink, initial: true) { _, link in
             guard let link else { return }
-            notificationRouter.linkOpened()
+            incomingLink = nil
+            // Close any sheet and go back to Today's first screen first.
             planEditor = nil
             path = NavigationPath()
             Task { await viewModel.open(link) }
+        }
+        .onAppear {
+            // Switching back to Today shows changes made in My Places or Settings.
+            Task { await viewModel.refresh() }
         }
         .onChange(of: scenePhase, initial: true) { _, phase in
             if phase == .active {
@@ -295,12 +284,6 @@ private struct PlanRowView: View {
 
 #Preview {
     if let dependencies = try? AppDependencies() {
-        TodayView(
-            viewModel: dependencies.today,
-            notificationRouter: dependencies.notificationRouter,
-            makePlanEditor: { dependencies.makePlanEditor(editing: $0) },
-            makePlanDetail: { dependencies.makePlanDetail(for: $0) },
-            makeOptions: { dependencies.makeOptions(for: $0) }
-        )
+        RootView(dependencies: dependencies)
     }
 }

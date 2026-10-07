@@ -30,3 +30,20 @@ public struct ActivityType: Identifiable, Hashable, Sendable {
         self.canBeOnline = canBeOnline
     }
 }
+
+extension ActivityType {
+    /// Exercise done outdoors: every suitable kind is an outdoor kind
+    /// (Run, Walk and Cycling in the catalogue).
+    public var isOutdoorExercise: Bool {
+        purpose == .exercise && !suitablePlaceKinds.isEmpty
+            && suitablePlaceKinds.allSatisfy { !$0.defaultIsIndoor }
+    }
+
+    /// Whether Lin can do this activity at the place (2.3): its kind is
+    /// suitable, or this is outdoor exercise and the place is an outdoor
+    /// place of kind Other, such as "Around home".
+    public func suits(_ place: Place) -> Bool {
+        if suitablePlaceKinds.contains(place.kind) { return true }
+        return isOutdoorExercise && place.kind == .other && !place.isIndoor
+    }
+}

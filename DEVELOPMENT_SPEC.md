@@ -150,6 +150,9 @@ Each kind provides defaults: `defaultIsIndoor`, `defaultIsCooled`,
 - `id: String` (e.g. "run"), `name`, `symbolName`, `purpose: ActivityPurpose`
 - `sensitivities: Set<ConditionSensitivity>` (heat, poorAirQuality, uv, wind, rain)
 - `suitablePlaceKinds: Set<PlaceKind>`, `canBeOnline: Bool`
+- `suits(_ place: Place) -> Bool`: the place's kind is suitable, or the activity is
+  outdoor exercise (Run, Walk, Cycling) and the place is an outdoor place of kind
+  Other, e.g. "Around home". Indoor Other places stay unsuitable.
 - `ActivityCatalogue.all` contains: Run, Walk, Cycling, Indoor swim, Gym session,
   Focus work, Client meeting, Coffee with a friend, Picnic, Outdoor sketching,
   Gallery visit, Grocery run.
@@ -350,6 +353,8 @@ Errors (`UpdateComfortPreferencesError`):
   "Enter a value in this range."
 - `planningHoursInvalid` — "Your earliest planning time needs to be before your latest." /
   "Adjust one of the times."
+`valueOutOfRange` carries the `ComfortPreferences.Field`; its name and range in the
+message come from 2.7's ranges. Input: a `ComfortPreferencesDraft` (the editors' values).
 
 ### 3.6 SavePlaceUseCase
 Rules: unique name; address must resolve to coordinates (via PlaceGeocoding);
@@ -359,6 +364,13 @@ Errors (`SavePlaceError`):
   "Use a different name, or edit the existing place."
 - `addressNotFound` — "DayShift couldn't find that address." /
   "Check the spelling, or add the suburb and postcode."
+- `nameIsEmpty` — "This place needs a name." / "Enter a name, such as Home or Newtown Library."
+- `outdoorPlaceCannotBeCooled` — "An outdoor place can't be air-conditioned." /
+  "Turn off Air-conditioned, or mark the place as indoor."
+- `heatLimitOutOfRange` — "The temperature needs to be between 20°C and 45°C." /
+  "Choose a temperature in this range."
+Input: a `PlaceDraft` (the editor's fields). An edited place whose address hasn't
+changed keeps its coordinates without a new lookup.
 
 ---
 
@@ -718,6 +730,10 @@ Record every change to this spec during development (commit as `docs:`).
 | 5 Oct 2026 | A plan that looks good gets up to three valid options even if none beats it (3.3) | With "only higher-scoring options", a plan that looks good would usually get none; "Find other options" must always show the primary use case for a flexible plan |
 | 6 Oct 2026 | After the last plan of the day, the widget timeline reloads at the start of tomorrow instead of `.atEnd` (6.2) | With no plan left, the timeline has a single entry, and `.atEnd` would make WidgetKit ask again straight away, over and over; the app still reloads the widget whenever a plan changes |
 | 6 Oct 2026 | The widget's empty and all-done states also show the next plan within 7 days (6.2) | As on Today's "Coming up", Lin can see her next plan from the Home Screen even when today has nothing left |
+| 6 Oct 2026 | `SavePlaceError` also covers an empty name, an air-conditioned outdoor place and a heat limit out of range (3.6) | These come from Place's own rules (2.1); the editor needs them in Lin's words, with what to do next |
+| 6 Oct 2026 | `UpdateComfortPreferencesError.valueOutOfRange` carries the field instead of a name and range (3.5) | The name and range in the message are derived from 2.7's ranges in one place, so they can't drift from the checks |
+| 6 Oct 2026 | Run, Walk and Cycling can also use outdoor places of kind Other, such as "Around home" (2.3) | Lin often runs or walks from her door, not only in a park; an indoor Other place (a friend's flat) still isn't suitable for outdoor exercise |
+| 7 Oct 2026 | Removed the temporary "Add sample places" button from Today (see 4 Oct); places are added in My Places | My Places and the Place Editor now exist, with the tab bar (7.2) |
 
 ---
 

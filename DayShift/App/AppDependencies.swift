@@ -11,6 +11,8 @@ final class AppDependencies {
     let checkUpcomingPlans: CheckUpcomingPlansUseCase
     let planActivity: PlanActivityUseCase
     let suggestAlternatives: SuggestAlternativesUseCase
+    let savePlace: SavePlaceUseCase
+    let updatePreferences: UpdateComfortPreferencesUseCase
     let acceptAlternative: AcceptAlternativeUseCase
     let today: TodayViewModel
     /// Kept here because the notification centre holds its delegate weakly.
@@ -81,6 +83,8 @@ final class AppDependencies {
             calendar: calendar
         )
 
+        self.savePlace = SavePlaceUseCase(places: places, geocoder: CLGeocoderPlaceGeocoder())
+        self.updatePreferences = UpdateComfortPreferencesUseCase(preferences: preferences, widget: widget)
         self.activities = activities
         self.suggestAlternatives = suggestAlternatives
         self.acceptAlternative = acceptAlternative
@@ -95,7 +99,6 @@ final class AppDependencies {
         today = TodayViewModel(
             checkUpcomingPlans: checkUpcomingPlans,
             activities: activities,
-            places: places,
             alertsStatus: NotificationSettingsAlertsStatus(),
             calendar: calendar
         )
@@ -104,6 +107,25 @@ final class AppDependencies {
     /// A Plan Editor for a new plan, or for `plan` when editing.
     func makePlanEditor(editing plan: PlannedActivity? = nil) -> PlanEditorViewModel {
         PlanEditorViewModel(editing: plan, planActivity: planActivity, places: places, calendar: calendar)
+    }
+
+    func makeSettings() -> SettingsViewModel {
+        SettingsViewModel(
+            preferences: preferences,
+            updatePreferences: updatePreferences,
+            checkUpcomingPlans: checkUpcomingPlans,
+            alertsStatus: NotificationSettingsAlertsStatus(),
+            calendar: calendar
+        )
+    }
+
+    func makeMyPlaces() -> MyPlacesViewModel {
+        MyPlacesViewModel(places: places, checkUpcomingPlans: checkUpcomingPlans)
+    }
+
+    /// A Place Editor for a new place, or for a saved place when editing.
+    func makePlaceEditor(editing place: Place? = nil) -> PlaceEditorViewModel {
+        PlaceEditorViewModel(editing: place, savePlace: savePlace, calendar: calendar)
     }
 
     func makeOptions(for plan: PlannedActivity) -> OptionsViewModel {
