@@ -8,16 +8,16 @@ public enum AirQualityCategory: String, CaseIterable, Codable, Hashable, Sendabl
     case veryPoor
     case extremelyPoor
 
-    // TODO (developer): confirm these against the NSW Air Quality Categories
-    // before submission and cite the source in README.
-    /// Thresholds in µg/m³: good < 25, fair < 50, poor < 100, veryPoor < 300,
-    /// otherwise extremelyPoor.
+    /// NSW 1-hour PM2.5 categories (µg/m³): Good below 25, Fair 25–50, Poor above
+    /// 50 to 100, Very poor above 100 to 300, Extremely poor above 300. A value on
+    /// a boundary belongs to the lower category, matching `pm25UpperBound`.
+    /// Source: NSW Government air quality categories (DEVELOPMENT_SPEC 2.6).
     public init(pm25: Double) {
         switch pm25 {
         case ..<25: self = .good
-        case ..<50: self = .fair
-        case ..<100: self = .poor
-        case ..<300: self = .veryPoor
+        case ...50: self = .fair
+        case ...100: self = .poor
+        case ...300: self = .veryPoor
         default: self = .extremelyPoor
         }
     }
